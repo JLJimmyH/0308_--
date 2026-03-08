@@ -56,7 +56,7 @@
                 rgba(0, 0, 0, 0.15) 4px
             );
             pointer-events: none;
-            z-index: 9999;
+            z-index: 100;
         }
 
         /* Page title */
@@ -127,14 +127,9 @@
             );
         }
 
-        /* Preview area */
+        /* Preview area - clean display */
         .preview-wrapper {
-            background: var(--bg);
-            background-image:
-                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            padding: 40px;
+            padding: 20px;
             margin-bottom: 24px;
             width: 100%;
             max-width: 900px;
@@ -143,53 +138,97 @@
             justify-content: center;
             align-items: center;
             border: 1px solid var(--border);
+            border-radius: 4px;
             overflow: auto;
             position: relative;
-            transition: all 300ms ease;
+            z-index: 200;
+            isolation: isolate;
         }
 
-        .preview-wrapper::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border: 1px solid transparent;
-            background: linear-gradient(135deg, var(--accent) 0%, transparent 50%, var(--accent-secondary) 100%) border-box;
-            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0.3;
-            pointer-events: none;
+        /* Background variants */
+        .preview-wrapper.bg-checker {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(-45deg, #e0e0e0 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e0e0e0 75%),
+                linear-gradient(-45deg, transparent 75%, #e0e0e0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
 
-        .preview-wrapper:hover {
+        .preview-wrapper.bg-black {
+            background: #000000;
+        }
+
+        .preview-wrapper.bg-white {
+            background: #ffffff;
+        }
+
+        .preview-wrapper.bg-image {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Background switcher buttons */
+        .bg-switcher {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .bg-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 200ms ease;
+            padding: 0;
+            position: relative;
+        }
+
+        .bg-btn:hover {
             border-color: var(--accent);
-            box-shadow: var(--glow);
+            box-shadow: var(--glow-sm);
         }
 
-        /* Corner accents */
-        .preview-wrapper .corner {
-            position: absolute;
-            width: 20px;
-            height: 20px;
+        .bg-btn.active {
             border-color: var(--accent);
-            border-style: solid;
-            opacity: 0.6;
+            box-shadow: var(--glow-sm);
         }
-        .preview-wrapper .corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
-        .preview-wrapper .corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
-        .preview-wrapper .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
-        .preview-wrapper .corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
 
-        .preview-label {
-            position: absolute;
-            top: 12px;
-            left: 40px;
-            font-family: "Share Tech Mono", monospace;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
+        .bg-btn.bg-btn-checker {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
+
+        .bg-btn.bg-btn-black {
+            background: #000000;
+        }
+
+        .bg-btn.bg-btn-white {
+            background: #ffffff;
+        }
+
+        .bg-btn.bg-btn-image {
+            background: var(--muted);
+            font-size: 14px;
             color: var(--muted-fg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-btn.bg-btn-image.has-image {
+            background-size: cover;
+            background-position: center;
         }
 
         #capture-area { 
@@ -484,12 +523,7 @@
         <p class="page-subtitle">// system_status: online <span>_</span></p>
     </header>
 
-    <div class="preview-wrapper cyber-chamfer">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-        <span class="preview-label">// preview_output</span>
+    <div class="preview-wrapper bg-checker" id="previewWrapper">
         <div id="capture-area">
             <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
                 <text id="text-stroke" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
@@ -501,6 +535,19 @@
     <style id="dynamic-font-style"></style>
 
     <div class="controls cyber-chamfer">
+        <div class="section-title">預覽背景</div>
+        
+        <div class="group" style="grid-column: span 2;">
+            <label>背景樣式</label>
+            <div class="bg-switcher">
+                <button type="button" class="bg-btn bg-btn-checker active" data-bg="checker" title="方格（透明）"></button>
+                <button type="button" class="bg-btn bg-btn-black" data-bg="black" title="黑色"></button>
+                <button type="button" class="bg-btn bg-btn-white" data-bg="white" title="白色"></button>
+                <button type="button" class="bg-btn bg-btn-image" data-bg="image" id="bgImageBtn" title="上傳圖片">🖼</button>
+                <input type="file" id="bgImageUpload" accept="image/*" style="display:none;">
+            </div>
+        </div>
+
         <div class="section-title">文字與字體設定</div>
         
         <div class="group">
@@ -711,7 +758,7 @@
         // 匯出功能
         async function exportPNG() {
             const captureArea = document.getElementById('capture-area');
-            const btn = document.querySelector('button');
+            const btn = document.querySelector('.btn-group button');
             const btnText = btn.querySelector('.btn-text');
             const originalText = btnText.innerText;
             btnText.innerText = "[ PROCESSING... ]";
@@ -739,6 +786,57 @@
                 btnText.innerText = originalText;
             }
         }
+
+        // 背景切換功能
+        const previewWrapper = document.getElementById('previewWrapper');
+        const bgBtns = document.querySelectorAll('.bg-btn');
+        const bgImageUpload = document.getElementById('bgImageUpload');
+        const bgImageBtn = document.getElementById('bgImageBtn');
+        let currentBgImage = null;
+
+        bgBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const bgType = this.dataset.bg;
+                
+                if (bgType === 'image') {
+                    bgImageUpload.click();
+                    return;
+                }
+                
+                // 移除所有背景類別
+                previewWrapper.classList.remove('bg-checker', 'bg-black', 'bg-white', 'bg-image');
+                previewWrapper.style.backgroundImage = '';
+                
+                // 添加選中的背景
+                previewWrapper.classList.add('bg-' + bgType);
+                
+                // 更新 active 狀態
+                bgBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        bgImageUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                currentBgImage = event.target.result;
+                
+                // 移除所有背景類別
+                previewWrapper.classList.remove('bg-checker', 'bg-black', 'bg-white');
+                previewWrapper.classList.add('bg-image');
+                previewWrapper.style.backgroundImage = `url(${currentBgImage})`;
+                
+                // 更新按鈕狀態
+                bgBtns.forEach(b => b.classList.remove('active'));
+                bgImageBtn.classList.add('active', 'has-image');
+                bgImageBtn.style.backgroundImage = `url(${currentBgImage})`;
+                bgImageBtn.textContent = '';
+            };
+            reader.readAsDataURL(file);
+        });
 
         // 初始化
         window.onload = () => setTimeout(updateEffect, 100);
