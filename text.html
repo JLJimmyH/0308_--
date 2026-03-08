@@ -39,13 +39,55 @@
             font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
             background: var(--bg);
             color: var(--fg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             padding: 20px;
             margin: 0;
             min-height: 100vh;
             position: relative;
+        }
+
+        /* Main layout container */
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
+            align-items: stretch;
+            height: calc(100vh - 140px);
+        }
+
+        /* Resizer divider */
+        .resizer {
+            width: 8px;
+            background: var(--border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            transition: background 200ms ease;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background: var(--accent);
+            box-shadow: var(--glow-sm);
+        }
+
+        .resizer::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 2px;
+            height: 40px;
+            background: var(--muted-fg);
+            border-radius: 2px;
+        }
+
+        .resizer:hover::before,
+        .resizer.dragging::before {
+            background: var(--bg);
         }
 
         /* Scanline overlay */
@@ -69,9 +111,8 @@
 
         /* Page title */
         .page-header {
-            width: 100%;
-            max-width: 900px;
-            margin-bottom: 24px;
+            max-width: 1400px;
+            margin: 0 auto 24px;
             text-align: center;
         }
 
@@ -138,17 +179,14 @@
         /* Preview area - clean display */
         .preview-wrapper {
             padding: 20px;
-            margin-bottom: 24px;
-            width: 100%;
-            max-width: 900px;
-            min-height: 300px;
+            flex: 1 1 50%;
+            min-width: 200px;
             display: flex;
             justify-content: center;
             align-items: center;
             border: 1px solid var(--border);
             border-radius: 4px;
             overflow: auto;
-            position: relative;
             z-index: 200;
             isolation: isolate;
         }
@@ -249,15 +287,16 @@
         /* Controls panel */
         .controls {
             background: var(--card);
-            padding: 30px;
+            padding: 24px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
+            gap: 16px;
+            flex: 1 1 50%;
+            min-width: 300px;
             border: 1px solid var(--border);
             position: relative;
-            transition: all 300ms ease;
+            transition: border-color 300ms ease, box-shadow 300ms ease;
+            overflow-y: auto;
         }
 
         .controls:hover {
@@ -498,6 +537,28 @@
         #dynamic-font-style { display: none; }
 
         /* Responsive */
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column-reverse;
+                height: auto;
+            }
+            .resizer {
+                display: none;
+            }
+            .controls {
+                flex: none;
+                width: 100%;
+                min-width: unset;
+                max-height: 60vh;
+            }
+            .preview-wrapper {
+                flex: none;
+                width: 100%;
+                min-width: unset;
+                height: 350px;
+            }
+        }
+
         @media (max-width: 640px) {
             .controls {
                 grid-template-columns: 1fr;
@@ -511,6 +572,9 @@
             }
             .page-title {
                 letter-spacing: 0.1em;
+            }
+            .group[style*="grid-column: span 2"] {
+                grid-column: span 1;
             }
         }
 
@@ -531,18 +595,8 @@
         <p class="page-subtitle">// system_status: online <span>_</span></p>
     </header>
 
-    <div class="preview-wrapper bg-checker" id="previewWrapper">
-        <div id="capture-area">
-            <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
-                <text id="text-stroke" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
-                <text id="text-fill" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
-            </svg>
-        </div>
-    </div>
-
-    <style id="dynamic-font-style"></style>
-
-    <div class="controls cyber-chamfer">
+    <div class="main-container" id="mainContainer">
+        <div class="controls cyber-chamfer" id="controlsPanel">
         <div class="section-title">預覽背景</div>
         
         <div class="group" style="grid-column: span 2;">
@@ -646,7 +700,21 @@
         <div class="btn-group">
             <button onclick="exportPNG()"><span class="btn-text">[ DOWNLOAD_PNG ]</span></button>
         </div>
+        </div>
+
+        <div class="resizer" id="resizer"></div>
+
+        <div class="preview-wrapper bg-checker" id="previewWrapper">
+            <div id="capture-area">
+                <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
+                    <text id="text-stroke" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
+                    <text id="text-fill" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
+                </svg>
+            </div>
+        </div>
     </div>
+
+    <style id="dynamic-font-style"></style>
 
     <script>
         const textStroke = document.getElementById('text-stroke');
@@ -845,6 +913,71 @@
                 bgImageBtn.textContent = '';
             };
             reader.readAsDataURL(file);
+        });
+
+        // 拖曳調整分割比例
+        const resizer = document.getElementById('resizer');
+        const mainContainer = document.getElementById('mainContainer');
+        const controlsPanel = document.getElementById('controlsPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizer.classList.add('dragging');
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            
+            const containerRect = mainContainer.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const mouseX = e.clientX - containerRect.left;
+            
+            // 計算百分比，限制在 20% - 80% 之間
+            let percent = (mouseX / containerWidth) * 100;
+            percent = Math.max(20, Math.min(80, percent));
+            
+            controlsPanel.style.flex = `0 0 ${percent}%`;
+            previewWrapper.style.flex = `0 0 ${100 - percent - 1}%`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // 觸控支援
+        resizer.addEventListener('touchstart', (e) => {
+            isResizing = true;
+            resizer.classList.add('dragging');
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isResizing) return;
+            
+            const touch = e.touches[0];
+            const containerRect = mainContainer.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const touchX = touch.clientX - containerRect.left;
+            
+            let percent = (touchX / containerWidth) * 100;
+            percent = Math.max(20, Math.min(80, percent));
+            
+            controlsPanel.style.flex = `0 0 ${percent}%`;
+            previewWrapper.style.flex = `0 0 ${100 - percent - 1}%`;
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizer.classList.remove('dragging');
+            }
         });
 
         // 初始化
