@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>// TEXT_FX_GENERATOR v2.077</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.1/html-to-image.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --fg: #e0e0e0;
+            --card: #12121a;
+            --muted: #1c1c2e;
+            --muted-fg: #6b7280;
+            --accent: #00ff88;
+            --accent-secondary: #ff00ff;
+            --accent-tertiary: #00d4ff;
+            --border: #2a2a3a;
+            --input-bg: #12121a;
+            --destructive: #ff3366;
+            --glow-sm: 0 0 3px var(--accent), 0 0 6px rgba(0,255,136,0.3);
+            --glow: 0 0 5px var(--accent), 0 0 10px rgba(0,255,136,0.4);
+            --glow-lg: 0 0 10px var(--accent), 0 0 20px rgba(0,255,136,0.6), 0 0 40px rgba(0,255,136,0.3);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+            background: var(--bg);
+            color: var(--fg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Scanline overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0.15) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Page title */
+        .page-header {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-family: "Orbitron", "Share Tech Mono", monospace;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            text-shadow: 
+                0 0 10px rgba(0,255,136,0.5),
+                0 0 20px rgba(0,255,136,0.3),
+                -2px 0 var(--accent-secondary),
+                2px 0 var(--accent-tertiary);
+            margin: 0;
+            animation: glitchTitle 4s infinite;
+        }
+
+        @keyframes glitchTitle {
+            0%, 92%, 100% { transform: translate(0); opacity: 1; }
+            93% { transform: translate(-2px, 1px) skewX(-1deg); opacity: 0.8; }
+            94% { transform: translate(2px, -1px) skewX(1deg); }
+            95% { transform: translate(-1px, 0); opacity: 1; }
+        }
+
+        .page-subtitle {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.75rem;
+            color: var(--muted-fg);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-top: 8px;
+        }
+
+        .page-subtitle span {
+            color: var(--accent);
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Chamfered corners clip-path */
+        .cyber-chamfer {
+            clip-path: polygon(
+                0 12px, 12px 0,
+                calc(100% - 12px) 0, 100% 12px,
+                100% calc(100% - 12px), calc(100% - 12px) 100%,
+                12px 100%, 0 calc(100% - 12px)
+            );
+        }
+
+        .cyber-chamfer-sm {
+            clip-path: polygon(
+                0 6px, 6px 0,
+                calc(100% - 6px) 0, 100% 6px,
+                100% calc(100% - 6px), calc(100% - 6px) 100%,
+                6px 100%, 0 calc(100% - 6px)
+            );
+        }
+
+        /* Preview area */
+        .preview-wrapper {
+            background: var(--bg);
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            padding: 40px;
+            margin-bottom: 24px;
+            width: 100%;
+            max-width: 900px;
+            min-height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+            overflow: auto;
+            position: relative;
+            transition: all 300ms ease;
+        }
+
+        .preview-wrapper::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, var(--accent) 0%, transparent 50%, var(--accent-secondary) 100%) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .preview-wrapper:hover {
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        /* Corner accents */
+        .preview-wrapper .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--accent);
+            border-style: solid;
+            opacity: 0.6;
+        }
+        .preview-wrapper .corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+        .preview-wrapper .corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+        .preview-wrapper .corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+        .preview-wrapper .corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+        .preview-label {
+            position: absolute;
+            top: 12px;
+            left: 40px;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted-fg);
+        }
+
+        #capture-area { 
+            display: inline-flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 30px; 
+        }
+
+        /* Controls panel */
+        .controls {
+            background: var(--card);
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 300ms ease;
+        }
+
+        .controls:hover {
+            border-color: rgba(0, 255, 136, 0.5);
+            box-shadow: var(--glow-sm);
+        }
+
+        .section-title {
+            grid-column: span 2;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: ">";
+            color: var(--accent-secondary);
+        }
+
+        .group { display: flex; flex-direction: column; gap: 8px; }
+
+        label {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-fg);
+        }
+        
+        /* Input styles */
+        input[type="text"], input[type="number"], select, input[type="file"] {
+            padding: 12px 12px 12px 28px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 13px;
+            width: 100%;
+            transition: all 200ms ease;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: var(--glow-sm);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300ff88' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        select option {
+            background: var(--card);
+            color: var(--fg);
+        }
+
+        /* Input wrapper with terminal prefix */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper::before {
+            content: ">";
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 13px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            cursor: pointer;
+            color: var(--muted-fg);
+        }
+
+        input[type="file"]::file-selector-button {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 12px;
+            margin-right: 12px;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 200ms ease;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        /* Color picker */
+        .color-group { display: flex; gap: 10px; align-items: center; }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: 2px solid var(--border);
+            width: 45px;
+            height: 42px;
+            cursor: pointer;
+            background: transparent;
+            padding: 2px;
+            transition: all 200ms ease;
+        }
+        input[type="color"]:hover {
+            border-color: var(--accent);
+            box-shadow: var(--glow-sm);
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; }
+        .color-group input[type="text"] { 
+            flex: 1; 
+            font-family: "JetBrains Mono", monospace; 
+            text-transform: uppercase;
+        }
+
+        /* Sliders */
+        .slider-group { display: flex; gap: 10px; align-items: center; }
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background: var(--border);
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent);
+            transition: all 200ms ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            box-shadow: var(--glow);
+            transform: scale(1.1);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px var(--accent);
+        }
+        .slider-group input[type="number"] { 
+            width: 70px; 
+            text-align: center;
+            padding-left: 12px;
+        }
+
+        /* Button */
+        .btn-group { grid-column: span 2; margin-top: 20px; }
+        button {
+            width: 100%;
+            padding: 16px 24px;
+            border: 2px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-family: "Share Tech Mono", monospace;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 200ms ease;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            transform: translateX(-101%);
+            transition: transform 300ms ease;
+            z-index: -1;
+        }
+
+        button:hover {
+            color: var(--bg);
+            box-shadow: var(--glow);
+        }
+
+        button:hover::before {
+            transform: translateX(0);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Glitch button text effect */
+        button .btn-text {
+            position: relative;
+            display: inline-block;
+        }
+
+        button:hover .btn-text {
+            animation: glitchBtn 0.3s ease;
+        }
+
+        @keyframes glitchBtn {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-1px, 1px); }
+            40% { transform: translate(1px, -1px); }
+            60% { transform: translate(-1px, 0); }
+            80% { transform: translate(1px, 0); }
+        }
+        
+        #dynamic-font-style { display: none; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .controls {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            .section-title {
+                grid-column: span 1;
+            }
+            .btn-group {
+                grid-column: span 1;
+            }
+            .page-title {
+                letter-spacing: 0.1em;
+            }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page header -->
+    <header class="page-header">
+        <h1 class="page-title">TEXT_FX_GENERATOR</h1>
+        <p class="page-subtitle">// system_status: online <span>_</span></p>
+    </header>
+
+    <div class="preview-wrapper cyber-chamfer">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <span class="preview-label">// preview_output</span>
+        <div id="capture-area">
+            <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
+                <text id="text-stroke" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
+                <text id="text-fill" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
+            </svg>
+        </div>
+    </div>
+
+    <style id="dynamic-font-style"></style>
+
+    <div class="controls cyber-chamfer">
+        <div class="section-title">文字與字體設定</div>
+        
+        <div class="group">
+            <label>文字內容</label>
+            <div class="input-wrapper">
+                <input type="text" id="rawText" value="噪" placeholder="輸入文字...">
+            </div>
+        </div>
+        
+        <div class="group">
+            <label>字體選擇</label>
+            <div class="input-wrapper">
+                <select id="fontSelect">
+                    <option value="'Microsoft JhengHei', sans-serif">微軟正黑體</option>
+                    <option value="custom" id="customFontOption" style="display:none;">(已上傳的自訂字體)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="group">
+            <label>上傳字體檔 (.ttf / .otf)</label>
+            <input type="file" id="fontUpload" accept=".ttf,.otf">
+        </div>
+
+        <div class="group">
+            <label>字體大小</label>
+            <div class="slider-group">
+                <input type="range" id="fontSizeRange" min="20" max="400" value="150">
+                <input type="number" id="fontSizeNum" min="20" max="400" value="150">
+            </div>
+        </div>
+
+        <div class="section-title">色彩與特效設定</div>
+
+        <div class="group">
+            <label>文字填色</label>
+            <div class="color-group">
+                <input type="color" id="fillColorPicker" value="#ff554d">
+                <div class="input-wrapper">
+                    <input type="text" id="fillColorHex" value="#FF554D" maxlength="7">
+                </div>
+            </div>
+        </div>
+
+        <div class="group">
+            <label>外圍描邊顏色</label>
+            <div class="color-group">
+                <input type="color" id="strokeColorPicker" value="#000000">
+                <div class="input-wrapper">
+                    <input type="text" id="strokeColorHex" value="#000000" maxlength="7">
+                </div>
+            </div>
+        </div>
+
+        <div class="group">
+            <label>描邊粗細</label>
+            <div class="slider-group">
+                <input type="range" id="strokeWidthRange" min="0" max="80" value="15">
+                <input type="number" id="strokeWidthNum" min="0" max="80" value="15">
+            </div>
+            
+            <label style="margin-top:12px;">描邊轉角樣式</label>
+            <div class="input-wrapper">
+                <select id="strokeJoinSelect">
+                    <option value="round">圓角 (Round) - 推薦</option>
+                    <option value="miter">尖角 (Miter)</option>
+                    <option value="bevel">斜切 (Bevel)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="group">
+            <label>光暈顏色</label>
+            <div class="color-group">
+                <input type="color" id="glowColorPicker" value="#00d4ff">
+                <div class="input-wrapper">
+                    <input type="text" id="glowColorHex" value="#00D4FF" maxlength="7">
+                </div>
+            </div>
+            <label style="margin-top:12px;">光暈大小</label>
+            <div class="slider-group">
+                <input type="range" id="glowBlurRange" min="0" max="100" value="0">
+                <input type="number" id="glowBlurNum" min="0" max="100" value="0">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button onclick="exportPNG()"><span class="btn-text">[ DOWNLOAD_PNG ]</span></button>
+        </div>
+    </div>
+
+    <script>
+        const textStroke = document.getElementById('text-stroke');
+        const textFill = document.getElementById('text-fill');
+        const svgCanvas = document.getElementById('svg-canvas');
+        const fontStyle = document.getElementById('dynamic-font-style');
+        const fontSelect = document.getElementById('fontSelect');
+        const customFontOption = document.getElementById('customFontOption');
+        let hasCustomFont = false;
+
+        // UI 雙向綁定邏輯
+        function syncColorInputs(pickerId, hexId) {
+            const picker = document.getElementById(pickerId);
+            const hex = document.getElementById(hexId);
+            picker.addEventListener('input', (e) => { hex.value = e.target.value.toUpperCase(); updateEffect(); });
+            hex.addEventListener('input', (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) val = '#' + val;
+                if (/^#[0-9A-F]{6}$/i.test(val)) { picker.value = val; updateEffect(); }
+            });
+        }
+        syncColorInputs('fillColorPicker', 'fillColorHex');
+        syncColorInputs('strokeColorPicker', 'strokeColorHex');
+        syncColorInputs('glowColorPicker', 'glowColorHex');
+
+        function syncSliderAndNum(rangeId, numId) {
+            const range = document.getElementById(rangeId);
+            const num = document.getElementById(numId);
+            range.addEventListener('input', (e) => { num.value = e.target.value; updateEffect(); });
+            num.addEventListener('input', (e) => { range.value = e.target.value; updateEffect(); });
+        }
+        syncSliderAndNum('fontSizeRange', 'fontSizeNum');
+        syncSliderAndNum('strokeWidthRange', 'strokeWidthNum');
+        syncSliderAndNum('glowBlurRange', 'glowBlurNum');
+
+        // 字體上傳與 Base64 轉換
+        document.getElementById('fontUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Font = event.target.result.split(',')[1];
+                const fontFormat = file.name.toLowerCase().endsWith('.otf') ? 'opentype' : 'truetype';
+                // 寫入 CSS 確保匯出時能抓到
+                fontStyle.innerHTML = `@font-face { font-family: 'MyCustomFont'; src: url(data:font/${fontFormat};base64,${base64Font}); }`;
+                hasCustomFont = true;
+                customFontOption.style.display = 'block';
+                fontSelect.value = 'custom';
+                document.fonts.ready.then(() => updateEffect());
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 監聽變數改變
+        document.getElementById('rawText').addEventListener('input', updateEffect);
+        fontSelect.addEventListener('change', updateEffect);
+        document.getElementById('strokeJoinSelect').addEventListener('change', updateEffect);
+
+        // 核心渲染邏輯 (雙層 SVG)
+        function updateEffect() {
+            const text = document.getElementById('rawText').value;
+            const size = Number(document.getElementById('fontSizeNum').value);
+            const fill = document.getElementById('fillColorHex').value;
+            const sColor = document.getElementById('strokeColorHex').value;
+            // 由於 SVG 邊框是從路徑向內外長，為了達到完全外擴，邊框數值需乘以 2
+            const sWidth = Number(document.getElementById('strokeWidthNum').value) * 2; 
+            const gColor = document.getElementById('glowColorHex').value;
+            const gBlur = Number(document.getElementById('glowBlurNum').value);
+            const sJoin = document.getElementById('strokeJoinSelect').value;
+
+            // 決定字體
+            const fontFamily = fontSelect.value === 'custom' ? "'MyCustomFont', sans-serif" : fontSelect.value;
+
+            // --- 頂層設定 (純填色) ---
+            textFill.textContent = text;
+            textFill.style.fontFamily = fontFamily;
+            textFill.style.fontSize = size + 'px';
+            textFill.style.fill = fill;
+            textFill.style.stroke = 'none'; // 頂層絕對不加描邊
+
+            // --- 底層設定 (純描邊與陰影) ---
+            textStroke.textContent = text;
+            textStroke.style.fontFamily = fontFamily;
+            textStroke.style.fontSize = size + 'px';
+            textStroke.style.fill = sColor; // 底層填滿描邊色，防止字體內部有空隙
+            textStroke.style.stroke = sColor;
+            textStroke.style.strokeWidth = sWidth + 'px';
+            textStroke.style.strokeLinejoin = sJoin;
+            
+            if (gBlur > 0) {
+                textStroke.style.filter = `drop-shadow(0px 0px ${gBlur}px ${gColor})`;
+            } else {
+                textStroke.style.filter = 'none';
+            }
+
+            // 動態計算 SVG 畫布大小，確保下載時不被裁切
+            setTimeout(() => {
+                const bbox = textFill.getBBox(); // 以頂層文字為基準計算
+                if(bbox.width === 0) return;
+                
+                const padding = (sWidth / 2) + gBlur + 50; 
+                const canvasWidth = bbox.width + padding * 2;
+                const canvasHeight = bbox.height + padding * 2;
+
+                svgCanvas.setAttribute('width', canvasWidth);
+                svgCanvas.setAttribute('height', canvasHeight);
+                
+                const centerX = canvasWidth / 2;
+                const centerY = canvasHeight / 2;
+                
+                textStroke.setAttribute('x', centerX);
+                textStroke.setAttribute('y', centerY);
+                textFill.setAttribute('x', centerX);
+                textFill.setAttribute('y', centerY);
+            }, 50);
+        }
+
+        // 匯出功能
+        async function exportPNG() {
+            const captureArea = document.getElementById('capture-area');
+            const btn = document.querySelector('button');
+            const btnText = btn.querySelector('.btn-text');
+            const originalText = btnText.innerText;
+            btnText.innerText = "[ PROCESSING... ]";
+            
+            try {
+                const options = { 
+                    backgroundColor: null, 
+                    skipStep: false,
+                    pixelRatio: 2 // 提升下載圖片的解析度
+                };
+                if (hasCustomFont) {
+                    options.fontEmbedCSS = fontStyle.innerHTML;
+                }
+
+                // 強制套用套件匯出
+                const dataUrl = await htmlToImage.toPng(captureArea, options);
+                const link = document.createElement('a');
+                link.download = `text-fx-${Date.now()}.png`;
+                link.href = dataUrl;
+                link.click();
+            } catch (error) {
+                console.error('匯出失敗', error);
+                alert('// ERROR: Export failed. Check font file.');
+            } finally {
+                btnText.innerText = originalText;
+            }
+        }
+
+        // 初始化
+        window.onload = () => setTimeout(updateEffect, 100);
+    </script>
+</body>
+</html>
