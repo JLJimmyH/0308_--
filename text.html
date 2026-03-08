@@ -8,6 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.1/html-to-image.min.js"></script>
     <style>
+        /* Taipei Sans TC font */
+        @font-face {
+            font-family: 'TaipeiSansTC';
+            src: url('./TaipeiSansTCBeta-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-display: swap;
+        }
+
         :root {
             --bg: #0a0a0f;
             --fg: #e0e0e0;
@@ -561,6 +569,7 @@
             <label>字體選擇</label>
             <div class="input-wrapper">
                 <select id="fontSelect">
+                    <option value="'TaipeiSansTC', sans-serif" selected>台北黑體 (Taipei Sans TC)</option>
                     <option value="'Microsoft JhengHei', sans-serif">微軟正黑體</option>
                     <option value="custom" id="customFontOption" style="display:none;">(已上傳的自訂字體)</option>
                 </select>
