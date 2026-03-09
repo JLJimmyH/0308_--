@@ -707,6 +707,17 @@
         <div class="preview-wrapper bg-checker" id="previewWrapper">
             <div id="capture-area">
                 <svg id="svg-canvas" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur in="SourceAlpha" stdDeviation="0" result="blur"/>
+                            <feFlood flood-color="#00d4ff" result="color"/>
+                            <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
                     <text id="text-stroke" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
                     <text id="text-fill" dominant-baseline="middle" text-anchor="middle" font-weight="bold"></text>
                 </svg>
@@ -804,10 +815,17 @@
             textStroke.style.strokeWidth = sWidth + 'px';
             textStroke.style.strokeLinejoin = sJoin;
             
+            // 使用 SVG 原生 filter，相容 iOS Safari / Chrome
+            const feBlur = document.querySelector('#glow-filter feGaussianBlur');
+            const feFlood = document.querySelector('#glow-filter feFlood');
+            feBlur.setAttribute('stdDeviation', gBlur > 0 ? gBlur : 0);
+            feFlood.setAttribute('flood-color', gColor);
+            // 清除 CSS filter（iOS 不支援 SVG 上的 CSS filter；且 CSS inline style 會蓋掉 SVG filter 屬性）
+            textStroke.style.filter = '';
             if (gBlur > 0) {
-                textStroke.style.filter = `drop-shadow(0px 0px ${gBlur}px ${gColor})`;
+                textStroke.setAttribute('filter', 'url(#glow-filter)');
             } else {
-                textStroke.style.filter = 'none';
+                textStroke.removeAttribute('filter');
             }
 
             // 動態計算 SVG 畫布大小，確保下載時不被裁切
