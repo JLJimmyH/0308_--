@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>極行 Theme Designer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
+
+  .app-layout { display: flex; height: 100vh; }
+
+  /* === Left: Phone Preview === */
+  .preview-panel { flex: 1; display: flex; align-items: center; justify-content: center; gap: 24px; padding: 20px; overflow: auto; }
+
+  .phone-frame {
+    width: 375px; height: 750px; border-radius: 40px; overflow: hidden;
+    border: 3px solid #333; position: relative; flex-shrink: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transition: background-color 0.3s;
+  }
+  .phone-label {
+    text-align: center; margin-bottom: 8px; font-size: 13px; color: #888;
+    font-weight: 600; letter-spacing: 1px;
+  }
+
+  /* === Right: Editor Panel === */
+  .editor-panel {
+    width: 380px; background: #141414; border-left: 1px solid #222;
+    overflow-y: auto; padding: 20px; flex-shrink: 0;
+  }
+  .editor-panel h2 { font-size: 16px; margin-bottom: 16px; color: #fff; }
+  .editor-panel h3 { font-size: 13px; margin: 16px 0 8px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Theme selector chips */
+  .theme-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .theme-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+    border: 1.5px solid #333; background: transparent; color: #ccc;
+    transition: all 0.2s;
+  }
+  .theme-chip:hover { border-color: #666; }
+  .theme-chip.active { border-color: #3B82F6; color: #fff; background: rgba(59,130,246,0.15); }
+
+  /* Color row */
+  .color-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    padding: 6px 8px; border-radius: 8px; transition: background 0.15s;
+  }
+  .color-row:hover { background: rgba(255,255,255,0.04); }
+  .color-label { flex: 1; font-size: 12px; color: #aaa; }
+  .color-input-wrap { position: relative; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+  .color-input-wrap input[type="color"] {
+    position: absolute; top: -4px; left: -4px; width: 40px; height: 40px;
+    border: none; cursor: pointer; background: none;
+  }
+  .color-hex {
+    width: 80px; background: #1a1a1a; border: 1px solid #333; border-radius: 6px;
+    padding: 4px 8px; color: #ddd; font-size: 12px; font-family: monospace;
+    text-align: center;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn {
+    flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: #3B82F6; color: #fff; }
+  .btn-primary:hover { background: #2563EB; }
+  .btn-secondary { background: #222; color: #ccc; border: 1px solid #333; }
+  .btn-secondary:hover { background: #2a2a2a; }
+
+  /* JSON output */
+  .json-output {
+    margin-top: 12px; background: #0d0d0d; border: 1px solid #222;
+    border-radius: 10px; padding: 12px; font-family: monospace; font-size: 11px;
+    color: #8be9fd; max-height: 300px; overflow-y: auto; white-space: pre-wrap;
+    word-break: break-all; display: none;
+  }
+  .json-output.show { display: block; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #22c55e; color: #fff; padding: 10px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+
+  /* isDark toggle */
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .toggle-label { font-size: 13px; color: #aaa; }
+  .toggle {
+    width: 44px; height: 24px; border-radius: 12px; background: #333;
+    position: relative; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle.on { background: #3B82F6; }
+  .toggle::after {
+    content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px; transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ========== Phone inner styles ========== */
+
+  /* Status bar */
+  .status-bar { height: 44px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+
+  /* Home screen */
+  .home-screen { height: 100%; display: flex; flex-direction: column; position: relative; }
+  .home-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+
+  /* Speed display */
+  .speed-display { text-align: center; }
+  .speed-number { font-size: 120px; font-weight: 200; line-height: 1; font-variant-numeric: tabular-nums; }
+  .speed-unit { font-size: 16px; opacity: 0.5; margin-top: 4px; }
+  .speed-limit-badge {
+    position: absolute; top: 60px; right: 20px;
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 4px solid #E57373; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; font-weight: 700;
+  }
+
+  /* Event card */
+  .event-card {
+    position: absolute; top: 20px; left: 16px; right: 16px;
+    border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .event-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .event-info { flex: 1; }
+  .event-title { font-size: 14px; font-weight: 600; }
+  .event-dist { font-size: 22px; font-weight: 700; }
+  .event-sub { font-size: 11px; opacity: 0.6; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 140px; height: 60px; border-radius: 48px 48px 0 0;
+    display: flex; align-items: center; justify-content: space-around;
+    backdrop-filter: blur(10px);
+  }
+  .bottom-bar-icon { font-size: 24px; opacity: 0.9; cursor: pointer; }
+
+  /* --- Menu screen --- */
+  .menu-screen { height: 100%; display: flex; flex-direction: column; overflow-y: auto; }
+  .menu-content { padding: 20px; flex: 1; }
+  .menu-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .menu-logo { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .menu-app-name { font-size: 16px; font-weight: 700; margin-left: 10px; }
+  .menu-close { font-size: 22px; opacity: 0.5; cursor: pointer; }
+
+  .menu-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .menu-card {
+    border-radius: 20px; padding: 14px; height: 90px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    cursor: pointer; transition: transform 0.15s;
+  }
+  .menu-card:hover { transform: scale(1.02); }
+  .menu-card-icon { font-size: 22px; }
+  .menu-card-title { font-size: 13px; font-weight: 500; }
+
+  .menu-section-title { font-size: 13px; opacity: 0.4; font-weight: 700; margin-bottom: 10px; }
+  .menu-section-group { border-radius: 16px; margin-bottom: 24px; overflow: hidden; }
+  .menu-list-item {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .menu-list-item:hover { filter: brightness(1.1); }
+  .menu-list-item-icon { font-size: 18px; opacity: 0.6; }
+  .menu-list-item-text { flex: 1; font-size: 13px; opacity: 0.9; }
+  .menu-list-item-arrow { font-size: 12px; opacity: 0.2; }
+
+  /* Social row */
+  .social-row { display: flex; justify-content: center; gap: 14px; margin-top: 20px; }
+  .social-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+
+  /* Theme dialog preview */
+  .theme-dialog-screen { height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+  .theme-dialog-inner { text-align: center; }
+  .theme-dialog-title {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(15,26,45,0.7); border-radius: 14px; padding: 8px 24px; margin-bottom: 18px;
+  }
+  .theme-dialog-bar { width: 4px; height: 18px; background: #3B82F6; border-radius: 2px; }
+  .theme-dialog-text { font-size: 15px; font-weight: 600; color: #fff; }
+  .theme-grid { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .theme-card-mini {
+    width: 88px; height: 88px; border-radius: 16px; overflow: hidden;
+    border: 1.5px solid rgba(255,255,255,0.2); cursor: pointer;
+    display: flex; flex-direction: column;
+  }
+  .theme-card-mini.selected { border-color: #fff; border-width: 2.5px; box-shadow: 0 0 12px rgba(255,255,255,0.25); }
+  .theme-card-top { flex: 3; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .theme-card-dot { width: 18px; height: 18px; border-radius: 50%; }
+  .theme-card-accent { width: 24px; height: 7px; border-radius: 4px; }
+  .theme-card-bottom { padding: 4px 0; text-align: center; font-size: 11px; font-weight: 600; }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .preview-panel { flex-direction: column; }
+  }
+  @media (max-width: 900px) {
+    .app-layout { flex-direction: column; }
+    .editor-panel { width: 100%; border-left: none; border-top: 1px solid #222; }
+    .phone-frame { width: 320px; height: 640px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+  <!-- Phone Previews -->
+  <div class="preview-panel">
+    <!-- Home Screen -->
+    <div>
+      <div class="phone-label">首頁</div>
+      <div class="phone-frame" id="phone-home"></div>
+    </div>
+    <!-- Menu Screen -->
+    <div>
+      <div class="phone-label">側邊選單</div>
+      <div class="phone-frame" id="phone-menu"></div>
+    </div>
+    <!-- Theme Dialog -->
+    <div>
+      <div class="phone-label">主題選擇器</div>
+      <div class="phone-frame" id="phone-theme-dialog"></div>
+    </div>
+  </div>
+
+  <!-- Editor Panel -->
+  <div class="editor-panel">
+    <h2>🎨 極行 Theme Designer</h2>
+
+    <h3>選擇主題</h3>
+    <div class="theme-chips" id="theme-chips"></div>
+
+    <div class="toggle-row">
+      <div class="toggle-label">深色模式 (isDark)</div>
+      <div class="toggle" id="toggle-dark" onclick="toggleDark()"></div>
+    </div>
+
+    <h3>背景與表面</h3>
+    <div id="colors-surface"></div>
+
+    <h3>品牌色</h3>
+    <div id="colors-brand"></div>
+
+    <h3>文字</h3>
+    <div id="colors-text"></div>
+
+    <h3>邊框與分隔</h3>
+    <div id="colors-border"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="exportJSON()">匯出 JSON</button>
+      <button class="btn btn-secondary" onclick="copyJSON()">複製</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="exportAllJSON()">匯出全部主題</button>
+    </div>
+    <div class="json-output" id="json-output"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已複製到剪貼簿</div>
+
+<script>
+// === Theme Data (from themes.json) ===
+const themesData = {
+  "themes": [
+    {"id":"dark","value":0,"name":"深色","isDark":true,"colors":{"backColor":"#FF2C2C2C","surfaceColor":"#FF1A2337","primaryColor":"#FF1A2337","primaryDark":"#FF0F1A2D","accentColor":"#FF2F5FBF","textColor":"#FFFFFFFF","textSecondary":"#99FFFFFF","surfaceDim":"#FF0B1120","surfaceBright":"#FF1F2430","borderColor":"#0FFFFFFF","dividerColor":"#0DFFFFFF"}},
+    {"id":"lightBlue","value":1,"name":"淺藍","isDark":false,"colors":{"backColor":"#FFEEF2F7","surfaceColor":"#FFFFFFFF","primaryColor":"#FF1E40AF","primaryDark":"#FF1E3A8A","accentColor":"#FF3B82F6","textColor":"#FF1E293B","textSecondary":"#FF64748B","surfaceDim":"#FFE8EDF3","surfaceBright":"#FFF5F7FA","borderColor":"#14000000","dividerColor":"#0F000000"}},
+    {"id":"lightWarm","value":2,"name":"暖白","isDark":false,"colors":{"backColor":"#FFF5F0EB","surfaceColor":"#FFFFF8F3","primaryColor":"#FF92400E","primaryDark":"#FF78350F","accentColor":"#FFD97706","textColor":"#FF1C1A18","textSecondary":"#FF78716C","surfaceDim":"#FFEDE5DB","surfaceBright":"#FFFAF5F0","borderColor":"#14000000","dividerColor":"#0F000000"}},
+    {"id":"pureWhite","value":3,"name":"純白","isDark":false,"colors":{"backColor":"#FFF8FAFC","surfaceColor":"#FFFFFFFF","primaryColor":"#FF334155","primaryDark":"#FF1E293B","accentColor":"#FF64748B","textColor":"#FF0F172A","textSecondary":"#FF475569","surfaceDim":"#FFEFF2F5","surfaceBright":"#FFF8FAFC","borderColor":"#0F000000","dividerColor":"#0D000000"}},
+    {"id":"oceanNight","value":4,"name":"海藍夜","isDark":true,"colors":{"backColor":"#FF0D1B2A","surfaceColor":"#FF152638","primaryColor":"#FF1A3A5C","primaryDark":"#FF0F2A44","accentColor":"#FF2563EB","textColor":"#FFE2EAF4","textSecondary":"#FF94A3B8","surfaceDim":"#FF0A1628","surfaceBright":"#FF1A2D42","borderColor":"#0FFFFFFF","dividerColor":"#0DFFFFFF"}}
+  ]
+};
+
+// Color property labels
+const colorLabels = {
+  backColor: '背景色 (backColor)',
+  surfaceColor: '表面色 (surfaceColor)',
+  surfaceDim: '暗表面 (surfaceDim)',
+  surfaceBright: '亮表面 (surfaceBright)',
+  primaryColor: '主色 (primaryColor)',
+  primaryDark: '深主色 (primaryDark)',
+  accentColor: '強調色 (accentColor)',
+  textColor: '文字色 (textColor)',
+  textSecondary: '次要文字 (textSecondary)',
+  borderColor: '邊框色 (borderColor)',
+  dividerColor: '分隔色 (dividerColor)',
+};
+
+const colorGroups = {
+  surface: ['backColor', 'surfaceColor', 'surfaceDim', 'surfaceBright'],
+  brand: ['primaryColor', 'primaryDark', 'accentColor'],
+  text: ['textColor', 'textSecondary'],
+  border: ['borderColor', 'dividerColor'],
+};
+
+// State
+let currentThemeIndex = 0;
+let themes = JSON.parse(JSON.stringify(themesData.themes));
+
+// === ARGB Hex Helpers ===
+// Flutter uses #AARRGGBB format
+function argbToRgba(argb) {
+  // "#FFRRGGBB" -> { r, g, b, a }
+  const hex = argb.replace('#', '');
+  const a = parseInt(hex.substring(0, 2), 16) / 255;
+  const r = parseInt(hex.substring(2, 4), 16);
+  const g = parseInt(hex.substring(4, 6), 16);
+  const b = parseInt(hex.substring(6, 8), 16);
+  return { r, g, b, a };
+}
+
+function rgbaToArgb(r, g, b, a) {
+  const ah = Math.round(a * 255).toString(16).padStart(2, '0').toUpperCase();
+  const rh = r.toString(16).padStart(2, '0').toUpperCase();
+  const gh = g.toString(16).padStart(2, '0').toUpperCase();
+  const bh = b.toString(16).padStart(2, '0').toUpperCase();
+  return `#${ah}${rh}${gh}${bh}`;
+}
+
+function argbToCssColor(argb) {
+  const { r, g, b, a } = argbToRgba(argb);
+  return `rgba(${r},${g},${b},${a.toFixed(3)})`;
+}
+
+function argbToHexInput(argb) {
+  // Color picker only supports #RRGGBB, ignore alpha
+  const hex = argb.replace('#', '');
+  return '#' + hex.substring(2);
+}
+
+function hexInputToArgb(hexInput, originalArgb) {
+  // Preserve original alpha
+  const origAlpha = originalArgb.replace('#', '').substring(0, 2);
+  const rgb = hexInput.replace('#', '').toUpperCase();
+  return `#${origAlpha}${rgb}`;
+}
+
+// Get current theme
+function ct() { return themes[currentThemeIndex]; }
+function cc() { return ct().colors; }
+
+// === Build Editor ===
+function buildThemeChips() {
+  const container = document.getElementById('theme-chips');
+  container.innerHTML = '';
+  themes.forEach((t, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'theme-chip' + (i === currentThemeIndex ? ' active' : '');
+    chip.textContent = t.name;
+    chip.onclick = () => { currentThemeIndex = i; render(); };
+    container.appendChild(chip);
+  });
+}
+
+function buildColorGroup(containerId, keys) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  keys.forEach(key => {
+    const val = cc()[key];
+    const row = document.createElement('div');
+    row.className = 'color-row';
+    row.innerHTML = `
+      <span class="color-label">${colorLabels[key]}</span>
+      <div class="color-input-wrap" style="background:${argbToCssColor(val)}">
+        <input type="color" value="${argbToHexInput(val)}" data-key="${key}">
+      </div>
+      <input class="color-hex" type="text" value="${val}" data-key="${key}">
+    `;
+    container.appendChild(row);
+
+    // Color picker change
+    row.querySelector('input[type="color"]').addEventListener('input', (e) => {
+      const newArgb = hexInputToArgb(e.target.value, cc()[key]);
+      cc()[key] = newArgb;
+      render();
+    });
+
+    // Hex input change
+    row.querySelector('.color-hex').addEventListener('change', (e) => {
+      let v = e.target.value.trim().toUpperCase();
+      if (/^#[0-9A-F]{8}$/.test(v)) {
+        cc()[key] = v;
+        render();
+      }
+    });
+  });
+}
+
+function buildEditor() {
+  buildThemeChips();
+  buildColorGroup('colors-surface', colorGroups.surface);
+  buildColorGroup('colors-brand', colorGroups.brand);
+  buildColorGroup('colors-text', colorGroups.text);
+  buildColorGroup('colors-border', colorGroups.border);
+
+  const toggle = document.getElementById('toggle-dark');
+  toggle.className = 'toggle' + (ct().isDark ? ' on' : '');
+}
+
+function toggleDark() {
+  ct().isDark = !ct().isDark;
+  render();
+}
+
+// === Render Phone Previews ===
+function renderHome() {
+  const c = cc();
+  const t = ct();
+  const backCss = argbToCssColor(c.backColor);
+  const textCss = argbToCssColor(c.textColor);
+  const textSecCss = argbToCssColor(c.textSecondary);
+  const surfaceCss = argbToCssColor(c.surfaceColor);
+  const primaryCss = argbToCssColor(c.primaryColor);
+  const accentCss = argbToCssColor(c.accentColor);
+  const dimCss = argbToCssColor(c.surfaceDim);
+  const brightCss = argbToCssColor(c.surfaceBright);
+
+  const phone = document.getElementById('phone-home');
+  phone.style.background = backCss;
+
+  phone.innerHTML = `
+    <div class="home-screen">
+      <!-- Status bar -->
+      <div class="status-bar" style="color:${textCss}">
+        <span>9:41</span>
+      </div>
+
+      <!-- Event card -->
+      <div class="event-card" style="background: linear-gradient(135deg, ${dimCss}, ${brightCss}); border: 1px solid ${argbToCssColor(c.borderColor)};">
+        <div class="event-icon" style="background:${accentCss}; color:#fff;">📷</div>
+        <div class="event-info">
+          <div class="event-title" style="color:${textCss}">固定測速</div>
+          <div class="event-sub" style="color:${textSecCss}">限速 110 km/h · 國道1號</div>
+        </div>
+        <div class="event-dist" style="color:${accentCss}">1.2<span style="font-size:12px;opacity:0.6">km</span></div>
+      </div>
+
+      <!-- Speed display -->
+      <div class="home-content">
+        <div class="speed-display">
+          <div class="speed-number" style="color:${textCss}">72</div>
+          <div class="speed-unit" style="color:${textSecCss}">km/h</div>
+        </div>
+
+        <div class="speed-limit-badge" style="color:${textCss}; background:${backCss};">
+          110
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="bottom-bar" style="background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.14);">
+        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">☰</span>
+        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">🚗</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderMenu() {
+  const c = cc();
+  const backCss = argbToCssColor(c.backColor);
+  const textCss = argbToCssColor(c.textColor);
+  const textSecCss = argbToCssColor(c.textSecondary);
+  const surfaceCss = argbToCssColor(c.surfaceColor);
+  const primaryCss = argbToCssColor(c.primaryColor);
+  const accentCss = argbToCssColor(c.accentColor);
+
+  // textColor with various opacities
+  const { r: tr, g: tg, b: tb } = argbToRgba(c.textColor);
+  const text04 = `rgba(${tr},${tg},${tb},0.04)`;
+  const text05 = `rgba(${tr},${tg},${tb},0.05)`;
+  const text08 = `rgba(${tr},${tg},${tb},0.08)`;
+  const text10 = `rgba(${tr},${tg},${tb},0.1)`;
+  const text40 = `rgba(${tr},${tg},${tb},0.4)`;
+  const text50 = `rgba(${tr},${tg},${tb},0.5)`;
+  const text60 = `rgba(${tr},${tg},${tb},0.6)`;
+  const text90 = `rgba(${tr},${tg},${tb},0.9)`;
+
+  const phone = document.getElementById('phone-menu');
+  phone.style.background = backCss;
+
+  phone.innerHTML = `
+    <div class="menu-screen">
+      <div class="menu-content">
+        <!-- Header -->
+        <div class="menu-header">
+          <div style="display:flex;align-items:center;">
+            <div class="menu-logo" style="background:${text05}; border:1px solid ${text10};">
+              <span style="font-size:18px;">🚗</span>
+            </div>
+            <span class="menu-app-name" style="color:${textCss}">極行</span>
+          </div>
+          <span class="menu-close" style="color:${text50}">✕</span>
+        </div>
+
+        <!-- Action Cards -->
+        <div class="menu-cards">
+          <div class="menu-card" style="background:rgba(74,144,226,0.1); border:1px solid rgba(74,144,226,0.2); border-radius:20px;">
+            <div class="menu-card-icon">📷</div>
+            <div class="menu-card-title" style="color:${textCss}">事件地圖</div>
+          </div>
+          <div class="menu-card" style="background:rgba(226,160,74,0.1); border:1px solid rgba(226,160,74,0.2); border-radius:20px;">
+            <div class="menu-card-icon">📺</div>
+            <div class="menu-card-title" style="color:${textCss}">即時路況</div>
+          </div>
+          <div class="menu-card" style="background:${text05}; border:1px solid ${text08}; border-radius:20px;">
+            <div class="menu-card-icon">🛣️</div>
+            <div class="menu-card-title" style="color:${textCss}">替代道路</div>
+          </div>
+          <div class="menu-card" style="background:${text05}; border:1px solid ${text08}; border-radius:20px;">
+            <div class="menu-card-icon">📍</div>
+            <div class="menu-card-title" style="color:${textCss}">軌跡記錄</div>
+          </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="menu-section-title" style="color:${text40}">偏好與設定</div>
+        <div class="menu-section-group" style="background:${text04}; border-radius:20px;">
+          ${['📌 自建提醒點位','🔔 自建車速提醒','📢 訂閱去廣告','⚙️ 設定'].map(item => `
+            <div class="menu-list-item">
+              <span class="menu-list-item-icon" style="color:${text60}">${item.substring(0,2)}</span>
+              <span class="menu-list-item-text" style="color:${text90}">${item.substring(3)}</span>
+              <span class="menu-list-item-arrow" style="color:${text50}">›</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Support Section -->
+        <div class="menu-section-title" style="color:${text40}">支援</div>
+        <div class="menu-section-group" style="background:${text04}; border-radius:20px;">
+          ${['📤 推薦給車友','✉️ 問題與建議','ℹ️ 關於'].map(item => `
+            <div class="menu-list-item">
+              <span class="menu-list-item-icon" style="color:${text60}">${item.substring(0,2)}</span>
+              <span class="menu-list-item-text" style="color:${text90}">${item.substring(3)}</span>
+              <span class="menu-list-item-arrow" style="color:${text50}">›</span>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Social -->
+        <div class="social-row">
+          ${['f','ig','t'].map(s => `
+            <div class="social-btn" style="background:${text08}; color:${text60}; font-size:13px; font-weight:700;">${s}</div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderThemeDialog() {
+  const c = cc();
+  const backCss = argbToCssColor(c.backColor);
+
+  const phone = document.getElementById('phone-theme-dialog');
+  phone.style.background = backCss;
+
+  let cardsHtml = '';
+  themes.forEach((t, i) => {
+    const tc = t.colors;
+    const isSelected = i === currentThemeIndex;
+    cardsHtml += `
+      <div class="theme-card-mini ${isSelected ? 'selected' : ''}" onclick="currentThemeIndex=${i};render();">
+        <div class="theme-card-top" style="background:${argbToCssColor(tc.backColor)}">
+          <div class="theme-card-dot" style="background:${argbToCssColor(tc.primaryColor)}"></div>
+          <div class="theme-card-accent" style="background:${argbToCssColor(tc.accentColor)}"></div>
+        </div>
+        <div class="theme-card-bottom" style="background:${argbToCssColor(tc.surfaceColor)}; color:${argbToCssColor(tc.textColor)}">${t.name}</div>
+      </div>
+    `;
+  });
+
+  phone.innerHTML = `
+    <div class="theme-dialog-screen">
+      <div class="theme-dialog-inner">
+        <div class="theme-dialog-title">
+          <div class="theme-dialog-bar"></div>
+          <div class="theme-dialog-text">主題樣式</div>
+        </div>
+        <div class="theme-grid">
+          ${cardsHtml}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// === Full Render ===
+function render() {
+  buildEditor();
+  renderHome();
+  renderMenu();
+  renderThemeDialog();
+}
+
+// === Export ===
+function exportJSON() {
+  const t = ct();
+  const json = JSON.stringify(t, null, 2);
+  const output = document.getElementById('json-output');
+  output.textContent = json;
+  output.classList.add('show');
+}
+
+function exportAllJSON() {
+  const data = { themes: themes };
+  const json = JSON.stringify(data, null, 2);
+  const output = document.getElementById('json-output');
+  output.textContent = json;
+  output.classList.add('show');
+}
+
+function copyJSON() {
+  const output = document.getElementById('json-output');
+  if (!output.textContent) exportJSON();
+  navigator.clipboard.writeText(output.textContent).then(() => {
+    showToast('已複製到剪貼簿');
+  });
+}
+
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
