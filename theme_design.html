@@ -338,20 +338,20 @@
     <div id="colors-border"></div>
 
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="exportJSON()">匯出 JSON</button>
-      <button class="btn btn-secondary" onclick="copyJSON()">複製</button>
+      <button class="btn btn-primary" onclick="saveToServer()">💾 儲存到伺服器</button>
+      <button class="btn btn-secondary" onclick="copyJSON()">複製 JSON</button>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="exportAllJSON()">匯出全部主題</button>
-    </div>
-    <div class="json-output" id="json-output"></div>
+    <div class="json-output show" id="json-output"></div>
   </div>
 </div>
 
 <div class="toast" id="toast">已複製到剪貼簿</div>
 
 <script>
-// === Theme Data (from themes.json) ===
+// === Worker API ===
+const API_BASE = 'https://myworker.ziop5566.workers.dev';
+
+// === Theme Data (本地預設，會被伺服器資料覆蓋) ===
 const themesData = {
   "themes": [
     {"id":"dark","value":0,"name":"深色","isDark":true,"colors":{"backColor":"#FF2C2C2C","surfaceColor":"#FF1A2337","primaryColor":"#FF1A2337","primaryDark":"#FF0F1A2D","accentColor":"#FF2F5FBF","textColor":"#FFFFFFFF","textSecondary":"#99FFFFFF","surfaceDim":"#FF0B1120","surfaceBright":"#FF1F2430","borderColor":"#0FFFFFFF","dividerColor":"#0DFFFFFF"}},
@@ -682,28 +682,17 @@ function render() {
   renderHome();
   renderMenu();
   renderThemeDialog();
+  updateJsonPreview();
 }
 
-// === Export ===
-function exportJSON() {
-  const t = ct();
-  const json = JSON.stringify(t, null, 2);
+// === JSON Preview (即時更新) ===
+function updateJsonPreview() {
   const output = document.getElementById('json-output');
-  output.textContent = json;
-  output.classList.add('show');
-}
-
-function exportAllJSON() {
-  const data = { themes: themes };
-  const json = JSON.stringify(data, null, 2);
-  const output = document.getElementById('json-output');
-  output.textContent = json;
-  output.classList.add('show');
+  output.textContent = JSON.stringify(ct(), null, 2);
 }
 
 function copyJSON() {
   const output = document.getElementById('json-output');
-  if (!output.textContent) exportJSON();
   navigator.clipboard.writeText(output.textContent).then(() => {
     showToast('已複製到剪貼簿');
   });
@@ -716,8 +705,44 @@ function showToast(text) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// Init
+// === Server API ===
+async function loadFromServer() {
+  try {
+    const res = await fetch(`${API_BASE}/themes`);
+    const data = await res.json();
+    if (data.themes && data.themes.length > 0) {
+      themes = data.themes;
+      currentThemeIndex = 0;
+      showToast('已從伺服器載入主題');
+    }
+  } catch (e) {
+    console.warn('無法連線伺服器，使用本地預設主題', e);
+  }
+  render();
+}
+
+async function saveToServer() {
+  try {
+    const res = await fetch(`${API_BASE}/themes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ themes }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('已儲存到伺服器');
+    } else {
+      showToast('儲存失敗');
+    }
+  } catch (e) {
+    console.error('儲存失敗', e);
+    showToast('無法連線伺服器');
+  }
+}
+
+// Init — 先渲染預設，再嘗試從伺服器載入
 render();
+loadFromServer();
 </script>
 </body>
 </html>
