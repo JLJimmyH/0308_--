@@ -26,30 +26,87 @@
 
   /* === Right: Editor Panel === */
   .editor-panel {
-    width: 380px; background: #141414; border-left: 1px solid #222;
+    width: 400px; background: #141414; border-left: 1px solid #222;
     overflow-y: auto; padding: 20px; flex-shrink: 0;
   }
   .editor-panel h2 { font-size: 16px; margin-bottom: 16px; color: #fff; }
-  .editor-panel h3 { font-size: 13px; margin: 16px 0 8px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-
-  /* Theme selector chips */
-  .theme-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .theme-chip {
-    padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
-    border: 1.5px solid #333; background: transparent; color: #ccc;
-    transition: all 0.2s;
+  .editor-section-title {
+    font-size: 12px; margin: 20px 0 10px; color: #666; text-transform: uppercase;
+    letter-spacing: 1px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
   }
-  .theme-chip:hover { border-color: #666; }
-  .theme-chip.active { border-color: #3B82F6; color: #fff; background: rgba(59,130,246,0.15); }
+  .editor-section-title::after {
+    content: ''; flex: 1; height: 1px; background: #222;
+  }
+
+  /* Theme management bar */
+  .theme-management { margin-bottom: 20px; }
+  .theme-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .theme-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    border: 1.5px solid transparent; background: transparent;
+  }
+  .theme-item:hover { background: rgba(255,255,255,0.04); }
+  .theme-item.active { border-color: #3B82F6; background: rgba(59,130,246,0.08); }
+  .theme-item-preview {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.1); overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .theme-item-preview-top { flex: 1; }
+  .theme-item-preview-bot { flex: 0 0 6px; }
+  .theme-item-name {
+    flex: 1; font-size: 13px; color: #ccc; background: none; border: none;
+    outline: none; font-family: inherit; cursor: pointer; min-width: 0;
+  }
+  .theme-item.active .theme-item-name { color: #fff; }
+  .theme-item-name:focus { cursor: text; border-bottom: 1px solid #3B82F6; }
+  .theme-item-badge {
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    background: rgba(255,255,255,0.06); color: #888;
+  }
+  .theme-item-delete {
+    width: 24px; height: 24px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; font-size: 14px;
+    color: #666; cursor: pointer; transition: all 0.2s;
+    background: transparent; border: none; opacity: 0;
+  }
+  .theme-item:hover .theme-item-delete { opacity: 1; }
+  .theme-item-delete:hover { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  .theme-actions { display: flex; gap: 6px; }
+  .theme-action-btn {
+    flex: 1; padding: 8px; border-radius: 8px; border: 1px dashed #333;
+    background: transparent; color: #888; font-size: 12px; cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 4px;
+  }
+  .theme-action-btn:hover { border-color: #3B82F6; color: #3B82F6; background: rgba(59,130,246,0.05); }
+
+  /* isDark toggle */
+  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,0.03); }
+  .toggle-label { font-size: 13px; color: #aaa; flex: 1; }
+  .toggle {
+    width: 44px; height: 24px; border-radius: 12px; background: #333;
+    position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle.on { background: #3B82F6; }
+  .toggle::after {
+    content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px; transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); }
 
   /* Color row */
   .color-row {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-    padding: 6px 8px; border-radius: 8px; transition: background 0.15s;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+    padding: 8px 10px; border-radius: 10px; transition: background 0.15s;
   }
   .color-row:hover { background: rgba(255,255,255,0.04); }
-  .color-label { flex: 1; font-size: 12px; color: #aaa; }
-  .color-input-wrap { position: relative; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+  .color-label { flex: 1; font-size: 12px; color: #aaa; line-height: 1.3; }
+  .color-label-desc { display: block; font-size: 10px; color: #555; margin-top: 1px; }
+  .color-input-wrap { position: relative; width: 32px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #333; flex-shrink: 0; }
   .color-input-wrap input[type="color"] {
     position: absolute; top: -4px; left: -4px; width: 40px; height: 40px;
     border: none; cursor: pointer; background: none;
@@ -59,17 +116,33 @@
     padding: 4px 8px; color: #ddd; font-size: 12px; font-family: monospace;
     text-align: center;
   }
+  /* Alpha slider */
+  .alpha-slider-wrap {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .alpha-slider {
+    width: 60px; -webkit-appearance: none; appearance: none; height: 4px;
+    border-radius: 2px; background: linear-gradient(to right, transparent, #fff);
+    outline: none;
+  }
+  .alpha-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; border: 2px solid #555; cursor: pointer;
+  }
+  .alpha-value { font-size: 10px; color: #666; width: 28px; text-align: right; }
 
   /* Buttons */
-  .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 20px; }
   .btn {
-    flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 13px;
+    flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 13px;
     font-weight: 600; cursor: pointer; transition: all 0.2s;
   }
   .btn-primary { background: #3B82F6; color: #fff; }
   .btn-primary:hover { background: #2563EB; }
   .btn-secondary { background: #222; color: #ccc; border: 1px solid #333; }
   .btn-secondary:hover { background: #2a2a2a; }
+  .btn-danger { background: transparent; color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
 
   /* JSON output */
   .json-output {
@@ -79,6 +152,33 @@
     word-break: break-all; display: none;
   }
   .json-output.show { display: block; }
+  .json-toggle-btn {
+    margin-top: 8px; background: none; border: none; color: #555; font-size: 12px;
+    cursor: pointer; padding: 4px; width: 100%; text-align: center;
+  }
+  .json-toggle-btn:hover { color: #888; }
+
+  /* Draft status bar */
+  .draft-bar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-radius: 10px; margin-bottom: 16px; font-size: 12px;
+    background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.25); color: #eab308;
+  }
+  .draft-bar.synced {
+    background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); color: #22c55e;
+  }
+  .draft-bar-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .draft-bar .draft-bar-dot { background: #eab308; }
+  .draft-bar.synced .draft-bar-dot { background: #22c55e; }
+  .draft-bar-text { flex: 1; }
+  .draft-bar-action {
+    background: none; border: 1px solid currentColor; border-radius: 6px;
+    color: inherit; padding: 3px 10px; font-size: 11px; cursor: pointer;
+    font-weight: 600; transition: all 0.2s;
+  }
+  .draft-bar-action:hover { opacity: 0.8; }
 
   /* Toast */
   .toast {
@@ -89,19 +189,34 @@
   }
   .toast.show { opacity: 1; }
 
-  /* isDark toggle */
-  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .toggle-label { font-size: 13px; color: #aaa; }
-  .toggle {
-    width: 44px; height: 24px; border-radius: 12px; background: #333;
-    position: relative; cursor: pointer; transition: background 0.2s;
+  /* Body lock for mobile editor */
+  body.editor-open { overflow: hidden; }
+  body.editor-open .preview-panel { pointer-events: none; }
+
+  /* Confirm dialog */
+  .confirm-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex;
+    align-items: center; justify-content: center; z-index: 1000; opacity: 0;
+    pointer-events: none; transition: opacity 0.2s;
   }
-  .toggle.on { background: #3B82F6; }
-  .toggle::after {
-    content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
-    background: #fff; top: 3px; left: 3px; transition: transform 0.2s;
+  .confirm-overlay.show { opacity: 1; pointer-events: all; }
+  .confirm-dialog {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 16px;
+    padding: 24px; max-width: 320px; width: 90%; text-align: center;
   }
-  .toggle.on::after { transform: translateX(20px); }
+  .confirm-dialog h3 { font-size: 16px; color: #fff; margin-bottom: 8px; }
+  .confirm-dialog p { font-size: 13px; color: #888; margin-bottom: 20px; }
+  .confirm-dialog .btn-row { margin-top: 0; }
+
+  /* Mobile bottom sheet */
+  .mobile-editor-toggle {
+    display: none; position: fixed; bottom: 16px; right: 16px; z-index: 100;
+    width: 56px; height: 56px; border-radius: 50%; background: #3B82F6;
+    color: #fff; border: none; font-size: 24px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+    align-items: center; justify-content: center;
+  }
+  .mobile-editor-toggle:active { transform: scale(0.95); }
 
   /* ========== Phone inner styles ========== */
 
@@ -200,18 +315,16 @@
 
   /* Responsive */
 
-  /* Large screens: 3 phones side by side, editor on right */
   @media (max-width: 1400px) {
     .phone-frame { width: 300px; height: 600px; border-radius: 32px; }
     .preview-panel { gap: 16px; padding: 16px; }
-    .editor-panel { width: 340px; padding: 16px; }
+    .editor-panel { width: 360px; padding: 16px; }
   }
 
-  /* Medium-large: phones wrap, editor on right */
   @media (max-width: 1100px) {
     .phone-frame { width: 260px; height: 520px; border-radius: 28px; }
     .preview-panel { flex-wrap: wrap; justify-content: center; gap: 16px; padding: 16px; }
-    .editor-panel { width: 320px; }
+    .editor-panel { width: 340px; }
     .speed-number { font-size: 80px !important; }
     .speed-limit-badge { width: 44px !important; height: 44px !important; font-size: 16px !important; border-width: 3px !important; top: 45px !important; right: 14px !important; }
     .event-card { padding: 10px 12px !important; border-radius: 12px !important; }
@@ -219,18 +332,32 @@
     .event-icon { width: 30px !important; height: 30px !important; font-size: 15px !important; }
   }
 
-  /* Medium: stack layout (editor on bottom) */
+  /* Medium: stack layout */
   @media (max-width: 900px) {
     .app-layout { flex-direction: column; height: auto; min-height: 100vh; }
     .preview-panel { flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; min-height: auto; }
-    .editor-panel { width: 100%; border-left: none; border-top: 1px solid #222; max-height: none; }
+    .editor-panel {
+      position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
+      border-left: none; border-top: 1px solid #333;
+      max-height: 70vh; z-index: 50; border-radius: 20px 20px 0 0;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    }
+    .editor-panel.open { transform: translateY(0); }
+    .editor-panel-handle {
+      display: flex; justify-content: center; padding: 10px; cursor: pointer;
+    }
+    .editor-panel-handle::before {
+      content: ''; width: 36px; height: 4px; border-radius: 2px; background: #444;
+    }
+    .mobile-editor-toggle { display: flex; }
     .phone-frame { width: 280px; height: 560px; border-radius: 30px; }
+    .preview-panel { padding-bottom: 80px; }
   }
 
-  /* Small tablets */
   @media (max-width: 700px) {
     .phone-frame { width: 240px; height: 480px; border-radius: 26px; }
-    .preview-panel { gap: 14px; padding: 14px; }
+    .preview-panel { gap: 14px; padding: 14px; padding-bottom: 80px; }
     .speed-number { font-size: 64px !important; }
     .event-card { top: 14px !important; left: 10px !important; right: 10px !important; padding: 8px 10px !important; }
     .event-title { font-size: 12px !important; }
@@ -245,17 +372,16 @@
     .theme-grid { gap: 8px !important; }
   }
 
-  /* Mobile phones */
   @media (max-width: 500px) {
     .phone-frame { width: 200px; height: 400px; border-radius: 22px; }
-    .preview-panel { flex-direction: column; align-items: center; gap: 12px; padding: 12px; }
+    .preview-panel { flex-direction: column; align-items: center; gap: 12px; padding: 12px; padding-bottom: 80px; }
     .phone-label { font-size: 11px; }
-    .editor-panel { padding: 14px; }
+    .editor-panel { padding: 14px; max-height: 80vh; }
     .editor-panel h2 { font-size: 14px; }
-    .color-row { flex-wrap: wrap; gap: 6px; padding: 6px; }
-    .color-label { flex-basis: 100%; font-size: 11px; }
+    .color-row { gap: 6px; padding: 6px; }
+    .color-label { font-size: 11px; }
     .color-hex { width: 70px; font-size: 11px; }
-    .btn { padding: 8px; font-size: 12px; }
+    .btn { padding: 10px; font-size: 12px; }
     .speed-number { font-size: 48px !important; }
     .speed-unit { font-size: 12px !important; }
     .speed-limit-badge { width: 36px !important; height: 36px !important; font-size: 13px !important; border-width: 2.5px !important; top: 35px !important; right: 10px !important; }
@@ -288,6 +414,7 @@
     .theme-card-dot { width: 12px !important; height: 12px !important; }
     .theme-card-accent { width: 16px !important; height: 5px !important; }
     .theme-card-bottom { font-size: 9px !important; }
+    .alpha-slider { width: 40px; }
   }
 </style>
 </head>
@@ -296,17 +423,14 @@
 <div class="app-layout">
   <!-- Phone Previews -->
   <div class="preview-panel">
-    <!-- Home Screen -->
     <div>
       <div class="phone-label">首頁</div>
       <div class="phone-frame" id="phone-home"></div>
     </div>
-    <!-- Menu Screen -->
     <div>
       <div class="phone-label">側邊選單</div>
       <div class="phone-frame" id="phone-menu"></div>
     </div>
-    <!-- Theme Dialog -->
     <div>
       <div class="phone-label">主題選擇器</div>
       <div class="phone-frame" id="phone-theme-dialog"></div>
@@ -314,38 +438,75 @@
   </div>
 
   <!-- Editor Panel -->
-  <div class="editor-panel">
-    <h2>🎨 極行 Theme Designer</h2>
+  <div class="editor-panel" id="editor-panel">
+    <div class="editor-panel-handle" style="display:none;" id="editor-handle" onclick="toggleEditorPanel()"></div>
+    <h2>極行 Theme Designer</h2>
 
-    <h3>選擇主題</h3>
-    <div class="theme-chips" id="theme-chips"></div>
+    <!-- Theme Management -->
+    <div class="theme-management">
+      <div class="editor-section-title">主題列表</div>
+      <div class="theme-list" id="theme-list"></div>
+      <div class="theme-actions">
+        <button class="theme-action-btn" onclick="addNewTheme()">+ 新增主題</button>
+        <button class="theme-action-btn" onclick="duplicateTheme()">複製目前主題</button>
+      </div>
+    </div>
 
+    <!-- Current theme settings -->
     <div class="toggle-row">
-      <div class="toggle-label">深色模式 (isDark)</div>
+      <span class="toggle-label">深色模式</span>
       <div class="toggle" id="toggle-dark" onclick="toggleDark()"></div>
     </div>
 
-    <h3>背景與表面</h3>
+    <div class="editor-section-title">背景與表面</div>
     <div id="colors-surface"></div>
 
-    <h3>品牌色</h3>
+    <div class="editor-section-title">品牌色</div>
     <div id="colors-brand"></div>
 
-    <h3>文字</h3>
+    <div class="editor-section-title">文字顏色</div>
     <div id="colors-text"></div>
 
-    <h3>邊框與分隔</h3>
+    <div class="editor-section-title">邊框與分隔線</div>
     <div id="colors-border"></div>
 
+    <!-- Draft status -->
+    <div class="draft-bar synced" id="draft-bar">
+      <div class="draft-bar-dot"></div>
+      <span class="draft-bar-text" id="draft-bar-text">與伺服器同步</span>
+    </div>
+
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveToServer()">💾 儲存到伺服器</button>
+      <button class="btn btn-primary" onclick="saveDraft()">儲存草稿</button>
       <button class="btn btn-secondary" onclick="copyJSON()">複製 JSON</button>
     </div>
-    <div class="json-output show" id="json-output"></div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-secondary" onclick="uploadToServerConfirm()" id="btn-upload" style="border-color:rgba(34,197,94,0.3); color:#22c55e;">上傳到伺服器</button>
+      <button class="btn btn-secondary" onclick="discardDraftConfirm()" style="border-color:rgba(239,68,68,0.2); color:#888;">捨棄草稿</button>
+    </div>
+    <button class="json-toggle-btn" onclick="toggleJsonPreview()">顯示 / 隱藏 JSON</button>
+    <div class="json-output" id="json-output"></div>
   </div>
 </div>
 
+<!-- Mobile FAB -->
+<button class="mobile-editor-toggle" id="mobile-fab" onclick="toggleEditorPanel()">
+  <span id="fab-icon">&#9998;</span>
+</button>
+
 <div class="toast" id="toast">已複製到剪貼簿</div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-dialog">
+    <h3 id="confirm-title">確認刪除</h3>
+    <p id="confirm-msg">確定要刪除這個主題嗎？</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-danger" id="confirm-ok" onclick="confirmAction()">刪除</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // === Worker API ===
@@ -362,19 +523,19 @@ const themesData = {
   ]
 };
 
-// Color property labels
-const colorLabels = {
-  backColor: '背景色 (backColor)',
-  surfaceColor: '表面色 (surfaceColor)',
-  surfaceDim: '暗表面 (surfaceDim)',
-  surfaceBright: '亮表面 (surfaceBright)',
-  primaryColor: '主色 (primaryColor)',
-  primaryDark: '深主色 (primaryDark)',
-  accentColor: '強調色 (accentColor)',
-  textColor: '文字色 (textColor)',
-  textSecondary: '次要文字 (textSecondary)',
-  borderColor: '邊框色 (borderColor)',
-  dividerColor: '分隔色 (dividerColor)',
+// Color property labels — friendly names + descriptions
+const colorMeta = {
+  backColor:      { label: '背景色',   desc: 'App 的主要底色' },
+  surfaceColor:   { label: '表面色',   desc: '卡片、面板的背景' },
+  surfaceDim:     { label: '暗表面',   desc: '較暗的區域背景' },
+  surfaceBright:  { label: '亮表面',   desc: '較亮的區域背景' },
+  primaryColor:   { label: '主色',     desc: '主要品牌色' },
+  primaryDark:    { label: '深主色',   desc: '較深的品牌色' },
+  accentColor:    { label: '強調色',   desc: '重點標記、按鈕色' },
+  textColor:      { label: '文字色',   desc: '主要文字顏色' },
+  textSecondary:  { label: '次要文字', desc: '說明、副標文字' },
+  borderColor:    { label: '邊框色',   desc: '卡片外框線條' },
+  dividerColor:   { label: '分隔線色', desc: '列表分隔線' },
 };
 
 const colorGroups = {
@@ -387,11 +548,11 @@ const colorGroups = {
 // State
 let currentThemeIndex = 0;
 let themes = JSON.parse(JSON.stringify(themesData.themes));
+let pendingConfirmAction = null;
+let isMobileEditorOpen = false;
 
 // === ARGB Hex Helpers ===
-// Flutter uses #AARRGGBB format
 function argbToRgba(argb) {
-  // "#FFRRGGBB" -> { r, g, b, a }
   const hex = argb.replace('#', '');
   const a = parseInt(hex.substring(0, 2), 16) / 255;
   const r = parseInt(hex.substring(2, 4), 16);
@@ -414,71 +575,204 @@ function argbToCssColor(argb) {
 }
 
 function argbToHexInput(argb) {
-  // Color picker only supports #RRGGBB, ignore alpha
   const hex = argb.replace('#', '');
   return '#' + hex.substring(2);
 }
 
 function hexInputToArgb(hexInput, originalArgb) {
-  // Preserve original alpha
   const origAlpha = originalArgb.replace('#', '').substring(0, 2);
   const rgb = hexInput.replace('#', '').toUpperCase();
   return `#${origAlpha}${rgb}`;
 }
 
-// Get current theme
+function getAlphaFromArgb(argb) {
+  return parseInt(argb.replace('#', '').substring(0, 2), 16);
+}
+
+function setAlphaInArgb(argb, alpha255) {
+  const hex = argb.replace('#', '');
+  const ah = Math.round(alpha255).toString(16).padStart(2, '0').toUpperCase();
+  return `#${ah}${hex.substring(2)}`;
+}
+
 function ct() { return themes[currentThemeIndex]; }
 function cc() { return ct().colors; }
 
-// === Build Editor ===
-function buildThemeChips() {
-  const container = document.getElementById('theme-chips');
+// === Theme Management ===
+function buildThemeList() {
+  const container = document.getElementById('theme-list');
   container.innerHTML = '';
   themes.forEach((t, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'theme-chip' + (i === currentThemeIndex ? ' active' : '');
-    chip.textContent = t.name;
-    chip.onclick = () => { currentThemeIndex = i; render(); };
-    container.appendChild(chip);
+    const tc = t.colors;
+    const item = document.createElement('div');
+    item.className = 'theme-item' + (i === currentThemeIndex ? ' active' : '');
+    item.innerHTML = `
+      <div class="theme-item-preview">
+        <div class="theme-item-preview-top" style="background:${argbToCssColor(tc.backColor)}"></div>
+        <div class="theme-item-preview-bot" style="background:${argbToCssColor(tc.accentColor)}"></div>
+      </div>
+      <input class="theme-item-name" type="text" value="${escapeHtml(t.name)}"
+        data-index="${i}"
+        onfocus="this.select()"
+        onchange="renameTheme(${i}, this.value)"
+        onclick="event.stopPropagation()">
+      <span class="theme-item-badge">${t.isDark ? '深' : '淺'}</span>
+      ${themes.length > 1 ? `<button class="theme-item-delete" onclick="event.stopPropagation(); deleteThemeConfirm(${i})" title="刪除主題">&#10005;</button>` : ''}
+    `;
+    item.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+        currentThemeIndex = i;
+        render();
+      }
+    });
+    container.appendChild(item);
   });
 }
 
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renameTheme(index, newName) {
+  const trimmed = newName.trim();
+  if (trimmed) {
+    themes[index].name = trimmed;
+    // Also update id to match (slug)
+    themes[index].id = trimmed.replace(/\s+/g, '_').toLowerCase();
+    render();
+  }
+}
+
+function addNewTheme() {
+  const newIndex = themes.length;
+  const isDark = true;
+  themes.push({
+    id: 'custom_' + Date.now(),
+    value: newIndex,
+    name: '新主題 ' + (newIndex + 1),
+    isDark: isDark,
+    colors: {
+      backColor: '#FF1A1A2E',
+      surfaceColor: '#FF252540',
+      primaryColor: '#FF3B3B6B',
+      primaryDark: '#FF2A2A50',
+      accentColor: '#FF6366F1',
+      textColor: '#FFFFFFFF',
+      textSecondary: '#99FFFFFF',
+      surfaceDim: '#FF121225',
+      surfaceBright: '#FF2D2D48',
+      borderColor: '#0FFFFFFF',
+      dividerColor: '#0DFFFFFF',
+    }
+  });
+  currentThemeIndex = newIndex;
+  render();
+  // Focus the name input for immediate editing
+  setTimeout(() => {
+    const nameInputs = document.querySelectorAll('.theme-item-name');
+    const lastInput = nameInputs[nameInputs.length - 1];
+    if (lastInput) { lastInput.focus(); lastInput.select(); }
+  }, 50);
+}
+
+function duplicateTheme() {
+  const source = JSON.parse(JSON.stringify(ct()));
+  source.id = source.id + '_copy_' + Date.now();
+  source.name = source.name + ' (副本)';
+  source.value = themes.length;
+  themes.push(source);
+  currentThemeIndex = themes.length - 1;
+  render();
+}
+
+function deleteThemeConfirm(index) {
+  if (themes.length <= 1) {
+    showToast('至少要保留一個主題');
+    return;
+  }
+  pendingConfirmAction = () => {
+    themes.splice(index, 1);
+    // Reindex values
+    themes.forEach((t, i) => t.value = i);
+    if (currentThemeIndex >= themes.length) currentThemeIndex = themes.length - 1;
+    render();
+    showToast('主題已刪除');
+  };
+  document.getElementById('confirm-title').textContent = '刪除主題';
+  document.getElementById('confirm-msg').textContent = `確定要刪除「${themes[index].name}」嗎？此操作無法還原。`;
+  document.getElementById('confirm-ok').textContent = '刪除';
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('show');
+  pendingConfirmAction = null;
+  // Reset confirm button style
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.style.color = '';
+  okBtn.style.borderColor = '';
+}
+
+function confirmAction() {
+  if (pendingConfirmAction) pendingConfirmAction();
+  closeConfirm();
+}
+
+// === Build Editor ===
 function buildColorGroup(containerId, keys) {
   const container = document.getElementById(containerId);
   container.innerHTML = '';
   keys.forEach(key => {
     const val = cc()[key];
+    const meta = colorMeta[key];
+    const alpha = getAlphaFromArgb(val);
+    const alphaPercent = Math.round(alpha / 255 * 100);
+
     const row = document.createElement('div');
     row.className = 'color-row';
     row.innerHTML = `
-      <span class="color-label">${colorLabels[key]}</span>
+      <span class="color-label">
+        ${meta.label}
+        <span class="color-label-desc">${meta.desc}</span>
+      </span>
       <div class="color-input-wrap" style="background:${argbToCssColor(val)}">
         <input type="color" value="${argbToHexInput(val)}" data-key="${key}">
       </div>
-      <input class="color-hex" type="text" value="${val}" data-key="${key}">
+      <div class="alpha-slider-wrap">
+        <input type="range" class="alpha-slider" min="0" max="255" value="${alpha}" data-key="${key}" title="透明度">
+        <span class="alpha-value">${alphaPercent}%</span>
+      </div>
     `;
     container.appendChild(row);
 
-    // Color picker change
-    row.querySelector('input[type="color"]').addEventListener('input', (e) => {
+    // Color picker change — only update previews during drag, not the editor
+    const colorInput = row.querySelector('input[type="color"]');
+    colorInput.addEventListener('input', (e) => {
       const newArgb = hexInputToArgb(e.target.value, cc()[key]);
       cc()[key] = newArgb;
-      render();
+      row.querySelector('.color-input-wrap').style.background = argbToCssColor(newArgb);
+      renderPreviews();
     });
+    // Full rebuild after color picker closes
+    colorInput.addEventListener('change', () => render());
 
-    // Hex input change
-    row.querySelector('.color-hex').addEventListener('change', (e) => {
-      let v = e.target.value.trim().toUpperCase();
-      if (/^#[0-9A-F]{8}$/.test(v)) {
-        cc()[key] = v;
-        render();
-      }
+    // Alpha slider change — only update previews, not the editor
+    const slider = row.querySelector('.alpha-slider');
+    const alphaLabel = row.querySelector('.alpha-value');
+    slider.addEventListener('input', (e) => {
+      const newAlpha = parseInt(e.target.value);
+      cc()[key] = setAlphaInArgb(cc()[key], newAlpha);
+      alphaLabel.textContent = Math.round(newAlpha / 255 * 100) + '%';
+      row.querySelector('.color-input-wrap').style.background = argbToCssColor(cc()[key]);
+      renderPreviews();
     });
+    // Full rebuild only after drag ends
+    slider.addEventListener('change', () => render());
   });
 }
 
 function buildEditor() {
-  buildThemeChips();
+  buildThemeList();
   buildColorGroup('colors-surface', colorGroups.surface);
   buildColorGroup('colors-brand', colorGroups.brand);
   buildColorGroup('colors-text', colorGroups.text);
@@ -493,15 +787,43 @@ function toggleDark() {
   render();
 }
 
+// === Mobile Editor Toggle ===
+function toggleEditorPanel() {
+  const panel = document.getElementById('editor-panel');
+  const fab = document.getElementById('fab-icon');
+  isMobileEditorOpen = !isMobileEditorOpen;
+  panel.classList.toggle('open', isMobileEditorOpen);
+  fab.innerHTML = isMobileEditorOpen ? '&#10005;' : '&#9998;';
+  // Lock/unlock background scrolling
+  document.body.classList.toggle('editor-open', isMobileEditorOpen);
+}
+
+// Setup mobile handle visibility
+function setupMobileUI() {
+  const handle = document.getElementById('editor-handle');
+  const isMobile = window.innerWidth <= 900;
+  handle.style.display = isMobile ? 'flex' : 'none';
+
+  if (!isMobile) {
+    const panel = document.getElementById('editor-panel');
+    panel.classList.remove('open');
+    isMobileEditorOpen = false;
+    document.body.classList.remove('editor-open');
+  }
+}
+window.addEventListener('resize', setupMobileUI);
+
+// Prevent touch-through on mobile editor panel
+document.getElementById('editor-panel').addEventListener('touchmove', (e) => {
+  e.stopPropagation();
+}, { passive: true });
+
 // === Render Phone Previews ===
 function renderHome() {
   const c = cc();
-  const t = ct();
   const backCss = argbToCssColor(c.backColor);
   const textCss = argbToCssColor(c.textColor);
   const textSecCss = argbToCssColor(c.textSecondary);
-  const surfaceCss = argbToCssColor(c.surfaceColor);
-  const primaryCss = argbToCssColor(c.primaryColor);
   const accentCss = argbToCssColor(c.accentColor);
   const dimCss = argbToCssColor(c.surfaceDim);
   const brightCss = argbToCssColor(c.surfaceBright);
@@ -511,37 +833,27 @@ function renderHome() {
 
   phone.innerHTML = `
     <div class="home-screen">
-      <!-- Status bar -->
       <div class="status-bar" style="color:${textCss}">
         <span>9:41</span>
       </div>
-
-      <!-- Event card -->
       <div class="event-card" style="background: linear-gradient(135deg, ${dimCss}, ${brightCss}); border: 1px solid ${argbToCssColor(c.borderColor)};">
-        <div class="event-icon" style="background:${accentCss}; color:#fff;">📷</div>
+        <div class="event-icon" style="background:${accentCss}; color:#fff;">&#128247;</div>
         <div class="event-info">
           <div class="event-title" style="color:${textCss}">固定測速</div>
-          <div class="event-sub" style="color:${textSecCss}">限速 110 km/h · 國道1號</div>
+          <div class="event-sub" style="color:${textSecCss}">限速 110 km/h</div>
         </div>
         <div class="event-dist" style="color:${accentCss}">1.2<span style="font-size:12px;opacity:0.6">km</span></div>
       </div>
-
-      <!-- Speed display -->
       <div class="home-content">
         <div class="speed-display">
           <div class="speed-number" style="color:${textCss}">72</div>
           <div class="speed-unit" style="color:${textSecCss}">km/h</div>
         </div>
-
-        <div class="speed-limit-badge" style="color:${textCss}; background:${backCss};">
-          110
-        </div>
+        <div class="speed-limit-badge" style="color:${textCss}; background:${backCss};">110</div>
       </div>
-
-      <!-- Bottom bar -->
       <div class="bottom-bar" style="background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.14);">
-        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">☰</span>
-        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">🚗</span>
+        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">&#9776;</span>
+        <span class="bottom-bar-icon" style="color:rgba(255,255,255,0.95);">&#128663;</span>
       </div>
     </div>
   `;
@@ -552,11 +864,7 @@ function renderMenu() {
   const backCss = argbToCssColor(c.backColor);
   const textCss = argbToCssColor(c.textColor);
   const textSecCss = argbToCssColor(c.textSecondary);
-  const surfaceCss = argbToCssColor(c.surfaceColor);
-  const primaryCss = argbToCssColor(c.primaryColor);
-  const accentCss = argbToCssColor(c.accentColor);
 
-  // textColor with various opacities
   const { r: tr, g: tg, b: tb } = argbToRgba(c.textColor);
   const text04 = `rgba(${tr},${tg},${tb},0.04)`;
   const text05 = `rgba(${tr},${tg},${tb},0.05)`;
@@ -573,62 +881,53 @@ function renderMenu() {
   phone.innerHTML = `
     <div class="menu-screen">
       <div class="menu-content">
-        <!-- Header -->
         <div class="menu-header">
           <div style="display:flex;align-items:center;">
             <div class="menu-logo" style="background:${text05}; border:1px solid ${text10};">
-              <span style="font-size:18px;">🚗</span>
+              <span style="font-size:18px;">&#128663;</span>
             </div>
             <span class="menu-app-name" style="color:${textCss}">極行</span>
           </div>
-          <span class="menu-close" style="color:${text50}">✕</span>
+          <span class="menu-close" style="color:${text50}">&#10005;</span>
         </div>
-
-        <!-- Action Cards -->
         <div class="menu-cards">
           <div class="menu-card" style="background:rgba(74,144,226,0.1); border:1px solid rgba(74,144,226,0.2); border-radius:20px;">
-            <div class="menu-card-icon">📷</div>
+            <div class="menu-card-icon">&#128247;</div>
             <div class="menu-card-title" style="color:${textCss}">事件地圖</div>
           </div>
           <div class="menu-card" style="background:rgba(226,160,74,0.1); border:1px solid rgba(226,160,74,0.2); border-radius:20px;">
-            <div class="menu-card-icon">📺</div>
+            <div class="menu-card-icon">&#128250;</div>
             <div class="menu-card-title" style="color:${textCss}">即時路況</div>
           </div>
           <div class="menu-card" style="background:${text05}; border:1px solid ${text08}; border-radius:20px;">
-            <div class="menu-card-icon">🛣️</div>
+            <div class="menu-card-icon">&#128739;&#65039;</div>
             <div class="menu-card-title" style="color:${textCss}">替代道路</div>
           </div>
           <div class="menu-card" style="background:${text05}; border:1px solid ${text08}; border-radius:20px;">
-            <div class="menu-card-icon">📍</div>
+            <div class="menu-card-icon">&#128205;</div>
             <div class="menu-card-title" style="color:${textCss}">軌跡記錄</div>
           </div>
         </div>
-
-        <!-- Settings Section -->
         <div class="menu-section-title" style="color:${text40}">偏好與設定</div>
         <div class="menu-section-group" style="background:${text04}; border-radius:20px;">
-          ${['📌 自建提醒點位','🔔 自建車速提醒','📢 訂閱去廣告','⚙️ 設定'].map(item => `
+          ${[['&#128204;','自建提醒點位'],['&#128276;','自建車速提醒'],['&#128226;','訂閱去廣告'],['&#9881;&#65039;','設定']].map(([icon, text]) => `
             <div class="menu-list-item">
-              <span class="menu-list-item-icon" style="color:${text60}">${item.substring(0,2)}</span>
-              <span class="menu-list-item-text" style="color:${text90}">${item.substring(3)}</span>
-              <span class="menu-list-item-arrow" style="color:${text50}">›</span>
+              <span class="menu-list-item-icon" style="color:${text60}">${icon}</span>
+              <span class="menu-list-item-text" style="color:${text90}">${text}</span>
+              <span class="menu-list-item-arrow" style="color:${text50}">&#8250;</span>
             </div>
           `).join('')}
         </div>
-
-        <!-- Support Section -->
         <div class="menu-section-title" style="color:${text40}">支援</div>
         <div class="menu-section-group" style="background:${text04}; border-radius:20px;">
-          ${['📤 推薦給車友','✉️ 問題與建議','ℹ️ 關於'].map(item => `
+          ${[['&#128228;','推薦給車友'],['&#9993;&#65039;','問題與建議'],['&#8505;&#65039;','關於']].map(([icon, text]) => `
             <div class="menu-list-item">
-              <span class="menu-list-item-icon" style="color:${text60}">${item.substring(0,2)}</span>
-              <span class="menu-list-item-text" style="color:${text90}">${item.substring(3)}</span>
-              <span class="menu-list-item-arrow" style="color:${text50}">›</span>
+              <span class="menu-list-item-icon" style="color:${text60}">${icon}</span>
+              <span class="menu-list-item-text" style="color:${text90}">${text}</span>
+              <span class="menu-list-item-arrow" style="color:${text50}">&#8250;</span>
             </div>
           `).join('')}
         </div>
-
-        <!-- Social -->
         <div class="social-row">
           ${['f','ig','t'].map(s => `
             <div class="social-btn" style="background:${text08}; color:${text60}; font-size:13px; font-weight:700;">${s}</div>
@@ -656,7 +955,7 @@ function renderThemeDialog() {
           <div class="theme-card-dot" style="background:${argbToCssColor(tc.primaryColor)}"></div>
           <div class="theme-card-accent" style="background:${argbToCssColor(tc.accentColor)}"></div>
         </div>
-        <div class="theme-card-bottom" style="background:${argbToCssColor(tc.surfaceColor)}; color:${argbToCssColor(tc.textColor)}">${t.name}</div>
+        <div class="theme-card-bottom" style="background:${argbToCssColor(tc.surfaceColor)}; color:${argbToCssColor(tc.textColor)}">${escapeHtml(t.name)}</div>
       </div>
     `;
   });
@@ -676,24 +975,34 @@ function renderThemeDialog() {
   `;
 }
 
-// === Full Render ===
-function render() {
-  buildEditor();
+// === Render only previews (no editor rebuild — safe during drag) ===
+function renderPreviews() {
   renderHome();
   renderMenu();
   renderThemeDialog();
   updateJsonPreview();
 }
 
-// === JSON Preview (即時更新) ===
+// === Full Render (rebuilds editor + previews) ===
+function render() {
+  buildEditor();
+  renderPreviews();
+}
+
+// === JSON Preview ===
 function updateJsonPreview() {
   const output = document.getElementById('json-output');
   output.textContent = JSON.stringify(ct(), null, 2);
 }
 
+function toggleJsonPreview() {
+  document.getElementById('json-output').classList.toggle('show');
+}
+
 function copyJSON() {
   const output = document.getElementById('json-output');
-  navigator.clipboard.writeText(output.textContent).then(() => {
+  const text = JSON.stringify({ themes }, null, 2);
+  navigator.clipboard.writeText(text).then(() => {
     showToast('已複製到剪貼簿');
   });
 }
@@ -705,23 +1014,116 @@ function showToast(text) {
   setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
+// === Draft / LocalStorage ===
+const STORAGE_KEY = 'themeDesigner_draft';
+const SERVER_SNAPSHOT_KEY = 'themeDesigner_serverSnapshot';
+let serverSnapshot = null; // last known server state
+
+function saveDraft() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ themes, currentThemeIndex }));
+  showToast('草稿已儲存');
+  updateDraftStatus();
+}
+
+function autoSaveDraft() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ themes, currentThemeIndex }));
+  updateDraftStatus();
+}
+
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.themes && data.themes.length > 0) {
+        themes = data.themes;
+        currentThemeIndex = data.currentThemeIndex || 0;
+        if (currentThemeIndex >= themes.length) currentThemeIndex = 0;
+        return true;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  return false;
+}
+
+function hasDraftChanges() {
+  if (!serverSnapshot) return true;
+  return JSON.stringify(themes) !== JSON.stringify(serverSnapshot);
+}
+
+function updateDraftStatus() {
+  const bar = document.getElementById('draft-bar');
+  const text = document.getElementById('draft-bar-text');
+  if (hasDraftChanges()) {
+    bar.className = 'draft-bar';
+    text.textContent = '有未上傳的變更';
+  } else {
+    bar.className = 'draft-bar synced';
+    text.textContent = '與伺服器同步';
+  }
+}
+
+function discardDraftConfirm() {
+  if (!serverSnapshot) {
+    showToast('尚未從伺服器載入資料');
+    return;
+  }
+  pendingConfirmAction = () => {
+    themes = JSON.parse(JSON.stringify(serverSnapshot));
+    currentThemeIndex = 0;
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+    updateDraftStatus();
+    showToast('已還原為伺服器版本');
+  };
+  document.getElementById('confirm-title').textContent = '捨棄草稿';
+  document.getElementById('confirm-msg').textContent = '確定要捨棄所有未上傳的修改，還原為伺服器上的版本嗎？';
+  document.getElementById('confirm-ok').textContent = '捨棄';
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+
+function uploadToServerConfirm() {
+  pendingConfirmAction = () => doUploadToServer();
+  document.getElementById('confirm-title').textContent = '上傳到伺服器';
+  document.getElementById('confirm-msg').textContent = '確定要將目前的主題設定覆寫到伺服器嗎？此操作會取代伺服器上的資料。';
+  document.getElementById('confirm-ok').textContent = '確認上傳';
+  document.getElementById('confirm-ok').style.color = '#22c55e';
+  document.getElementById('confirm-ok').style.borderColor = 'rgba(34,197,94,0.3)';
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+
 // === Server API ===
 async function loadFromServer() {
   try {
     const res = await fetch(`${API_BASE}/themes`);
     const data = await res.json();
     if (data.themes && data.themes.length > 0) {
-      themes = data.themes;
-      currentThemeIndex = 0;
-      showToast('已從伺服器載入主題');
+      serverSnapshot = JSON.parse(JSON.stringify(data.themes));
+      localStorage.setItem(SERVER_SNAPSHOT_KEY, JSON.stringify(data.themes));
+
+      // If no local draft, use server data
+      const hasDraft = localStorage.getItem(STORAGE_KEY);
+      if (!hasDraft) {
+        themes = data.themes;
+        currentThemeIndex = 0;
+        showToast('已從伺服器載入主題');
+      } else {
+        showToast('已載入本地草稿（伺服器資料已快取）');
+      }
     }
   } catch (e) {
-    console.warn('無法連線伺服器，使用本地預設主題', e);
+    console.warn('無法連線伺服器，使用本地資料', e);
+    // Try to load server snapshot from localStorage
+    try {
+      const snap = localStorage.getItem(SERVER_SNAPSHOT_KEY);
+      if (snap) serverSnapshot = JSON.parse(snap);
+    } catch (_) { /* ignore */ }
   }
   render();
+  updateDraftStatus();
 }
 
-async function saveToServer() {
+async function doUploadToServer() {
   try {
     const res = await fetch(`${API_BASE}/themes`, {
       method: 'POST',
@@ -730,19 +1132,32 @@ async function saveToServer() {
     });
     const data = await res.json();
     if (data.ok) {
-      showToast('已儲存到伺服器');
+      serverSnapshot = JSON.parse(JSON.stringify(themes));
+      localStorage.setItem(SERVER_SNAPSHOT_KEY, JSON.stringify(themes));
+      localStorage.removeItem(STORAGE_KEY);
+      updateDraftStatus();
+      showToast('已上傳到伺服器');
     } else {
-      showToast('儲存失敗');
+      showToast('上傳失敗');
     }
   } catch (e) {
-    console.error('儲存失敗', e);
+    console.error('上傳失敗', e);
     showToast('無法連線伺服器');
   }
 }
 
-// Init — 先渲染預設，再嘗試從伺服器載入
+// === Auto-save draft on every change ===
+const _origRender = render;
+render = function() {
+  _origRender();
+  autoSaveDraft();
+};
+
+// Init
+setupMobileUI();
+loadDraft(); // load local draft first (if any)
 render();
-loadFromServer();
+loadFromServer(); // then fetch server data in background
 </script>
 </body>
 </html>
