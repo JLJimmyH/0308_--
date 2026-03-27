@@ -1101,11 +1101,26 @@ async function loadFromServer() {
       serverSnapshot = JSON.parse(JSON.stringify(data.themes));
       localStorage.setItem(SERVER_SNAPSHOT_KEY, JSON.stringify(data.themes));
 
-      // If no local draft, use server data
-      const hasDraft = localStorage.getItem(STORAGE_KEY);
-      if (!hasDraft) {
+      // Use server data if no real draft exists
+      // A "real" draft means user actually made changes vs the server version
+      const draftRaw = localStorage.getItem(STORAGE_KEY);
+      let useServerData = true;
+      if (draftRaw) {
+        try {
+          const draftData = JSON.parse(draftRaw);
+          const draftStr = JSON.stringify(draftData.themes);
+          const serverStr = JSON.stringify(data.themes);
+          const defaultStr = JSON.stringify(themesData.themes);
+          // Only keep draft if it differs from BOTH server and hardcoded defaults
+          if (draftStr !== serverStr && draftStr !== defaultStr) {
+            useServerData = false;
+          }
+        } catch (_) { /* corrupted draft, ignore */ }
+      }
+      if (useServerData) {
         themes = data.themes;
         currentThemeIndex = 0;
+        localStorage.removeItem(STORAGE_KEY);
         showToast('已從伺服器載入主題');
       } else {
         showToast('已載入本地草稿（伺服器資料已快取）');
@@ -1147,17 +1162,20 @@ async function doUploadToServer() {
 }
 
 // === Auto-save draft on every change ===
+let _autoSaveEnabled = false;
 const _origRender = render;
 render = function() {
   _origRender();
-  autoSaveDraft();
+  if (_autoSaveEnabled) autoSaveDraft();
 };
 
 // Init
 setupMobileUI();
-loadDraft(); // load local draft first (if any)
-render();
-loadFromServer(); // then fetch server data in background
+const hadDraft = loadDraft(); // load local draft first (if any)
+render(); // initial render — autoSave is OFF so we don't pollute localStorage
+loadFromServer().then(() => {
+  _autoSaveEnabled = true; // enable auto-save only after server data is resolved
+});
 </script>
 </body>
 </html>
